@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ShareWithAll</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2C6BED;
+            --primary-light: #E8F0FE;
+            --text: #1B1B1B;
+            --text-secondary: #6B6B6B;
+            --background: #F6F6F6;
+            --border: #E0E0E0;
+            --spacing: 16px;
+            --radius: 8px;
+            --success: #4CAF50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding: 0;
+            margin: 0;
+        }
+
+        .header {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            width: 28px;
+            height: 28px;
+        }
+
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-left: auto;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 32px auto;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 32px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text);
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .file-input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .custom-file-input {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 2px solid var(--primary);
+        }
+
+        .custom-file-input:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-family: 'Roboto Mono', monospace;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Roboto Mono', monospace;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .button:hover {
+            background: #1a54c7;
+            transform: translateY(-1px);
+        }
+
+        .code-display {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--primary-light);
+            border-radius: var(--radius);
+            border: 2px solid var(--primary);
+            display: none;
+        }
+
+        .code-display.visible {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .code-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .code-value {
+            font-size: 20px;
+            color: var(--primary);
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            main {
+                grid-template-columns: 1fr;
+                padding: 16px;
+                margin: 16px auto;
+            }
+
+            .header {
+                padding: 16px;
+            }
+
+            .logo {
+                flex-wrap: wrap;
+            }
+
+            .subtitle {
+                margin-left: 0;
+                width: 100%;
+                margin-top: 8px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .custom-file-input,
+            input[type="text"],
+            .button {
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="/static/logo.png" alt="Logo" loading="lazy">
+            <h1>ShareWithAll</h1>
+            <p class="subtitle">Simple file sharing</p>
+        </div>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2 class="card-title">Upload File</h2>
+            <form id="uploadForm" onsubmit="handleUpload(event)">
+                <div class="file-input-container">
+                    <div class="custom-file-input" role="button" aria-label="Choose file">Choose File</div>
+                    <input type="file" name="file" required aria-label="File input">
+                </div>
+                <button type="submit" class="button">Upload</button>
+                <div id="codeDisplay" class="code-display">
+                    <div class="code-title">Your file code:</div>
+                    <div class="code-value" id="codeValue"></div>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Retrieve File</h2>
+            <form id="retrieveForm" onsubmit="handleDownload(event)">
+                <input type="text" name="code" placeholder="Enter file code" required aria-label="File code input">
+                <button type="submit" class="button">Download</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const fileInput = document.querySelector('input[type="file"]');
+        const customFileInput = document.querySelector('.custom-file-input');
+        const codeDisplay = document.getElementById('codeDisplay');
+        const codeValue = document.getElementById('codeValue');
+        
+        fileInput.addEventListener('change', function() {
+            customFileInput.textContent = this.files.length > 0 ? this.files[0].name : 'Choose File';
+        });
+
+        function validateForm() {
+            const file = document.querySelector('input[type="file"]').files[0];
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            
+            if (file && file.size > maxSize) {
+                alert('File size must be less than 10MB');
+                return false;
+            }
+            return true;
+        }
+
+        async function handleUpload(event) {
+            event.preventDefault();
+            
+            if (!validateForm()) return;
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(e) {
+                const base64Data = e.target.result.split(',')[1];
+                
+                try {
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            filename: file.name,
+                            filedata: base64Data,
+                            mime_type: file.type
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Upload failed');
+                    }
+
+                    const result = await response.json();
+                    codeValue.textContent = result.code;
+                    codeDisplay.classList.add('visible');
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Upload failed. Please try again.');
+                }
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        async function handleDownload(event) {
+            event.preventDefault();
+            
+            const code = document.querySelector('input[name="code"]').value;
+            
+            try {
+                window.location.href = `/download/${code}`;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Download failed. Please check your code and try again.');
+            }
+        }
+    </script>
+</body>
+</html>
