@@ -5,12 +5,40 @@ import time
 import threading
 import random
 from io import BytesIO
+from threading import Lock
 
 
 app = Flask(__name__)
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+
 
 # Store uploaded files in memory (key = random ID, value = { filename, filedata, mime_type })
 global_files = {}
+files_lock = Lock()
+
+
+def cleanup_expired_files():
+    """Cleanup expired files every 5 minutes"""
+    while True:
+        time.sleep(300)  # Sleep for 5 minutes
+        current_time = time.time()
+        
+        with files_lock:
+            # Create list of expired keys to avoid modifying dict during iteration
+            expired_keys = [
+                key for key, info in global_files.items()
+                if current_time - info['created_at'] > 900  # 15 minutes
+            ]
+            
+            # Remove expired files
+            for key in expired_keys:
+                global_files.pop(key, None)
+
+
+# Start cleanup thread
+cleanup_thread = threading.Thread(target=cleanup_expired_files, daemon=True)
+cleanup_thread.start()
+
 
 @app.route('/')
 def base():
@@ -18,6 +46,7 @@ def base():
         return render_template('base.html')
     except Exception as e:
         return jsonify({'error': 'Failed to render template: ' + str(e)}), 500
+
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -39,45 +68,38 @@ def upload():
             return jsonify({'error': 'Invalid base64 data: ' + str(e)}), 400
 
         # Generate a 4 digit route ID
-        while True:
-            route_id = str(random.randint(1000, 9999))
-            if route_id not in global_files:
-                break
-        
-        try:
-            # Store file data in memory
-            global_files[route_id] = {
-                'filename': filename,
-                'filedata': filedata,
-                'mime_type': mime_type,
-                'created_at': time.time()
-            }
-
-            # Schedule deletion after 1 hour
-            threading.Timer(3600, lambda: global_files.pop(route_id, None)).start()
-        except Exception as e:
-            return jsonify({'error': 'Failed to store file: ' + str(e)}), 500
+        with files_lock:
+            while True:
+                route_id = str(random.randint(1000, 9999))
+                if route_id not in global_files:
+                    # Store file data in memory
+                    global_files[route_id] = {
+                        'filename': filename,
+                        'filedata': filedata,
+                        'mime_type': mime_type,
+                        'created_at': time.time()
+                    }
+                    break
 
         return jsonify({'code': route_id})
 
     except Exception as e:
         return jsonify({'error': 'Upload failed: ' + str(e)}), 500
 
+
 @app.route('/download/<route_id>')
 def download(route_id):
     try:
-        if route_id not in global_files:
-            return jsonify({'error': 'File not found or expired'}), 404
+        with files_lock:
+            if route_id not in global_files:
+                return jsonify({'error': 'File not found or expired'}), 404
 
-        file_info = global_files[route_id]
-        
-        # Check if file has expired (1 hour)
-        if time.time() - file_info['created_at'] > 3600:
-            try:
+            file_info = global_files[route_id].copy()  # Make a copy to avoid race conditions
+            
+            # Check if file has expired (15 minutes)
+            if time.time() - file_info['created_at'] > 900:
                 global_files.pop(route_id, None)
-            except Exception:
-                pass  # Ignore error if key was already removed
-            return jsonify({'error': 'File has expired'}), 404
+                return jsonify({'error': 'File has expired'}), 404
 
         try:
             file_bytes = base64.b64decode(file_info['filedata'])
@@ -87,6 +109,7 @@ def download(route_id):
         try:
             # Create BytesIO object instead of raw bytes
             file_stream = BytesIO(file_bytes)
+            file_stream.seek(0)  # Ensure stream is at start
             
             return send_file(
                 path_or_file=file_stream,
@@ -99,6 +122,34 @@ def download(route_id):
 
     except Exception as e:
         return jsonify({'error': 'Download failed: ' + str(e)}), 500
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        
+        if password == ADMIN_PASSWORD:
+            all_files = []
+            current_time = time.time()
+            
+            with files_lock:
+                for route_id, file_info in global_files.items():
+                    is_expired = current_time - file_info['created_at'] > 900  # 15 minutes
+                    all_files.append({
+                        'route_id': route_id,
+                        'filename': file_info['filename'],
+                        'created_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_info['created_at'])),
+                        'expires_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_info['created_at'] + 900)),
+                        'expired': is_expired
+                    })
+
+            return render_template('admin.html', active_files=all_files)
+        else:
+            return render_template('admin_login.html', error="Invalid password")
+            
+    return render_template('admin_login.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)

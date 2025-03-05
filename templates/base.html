@@ -14,14 +14,19 @@
             --background: #121212;
             --border: #2A2A2A;
             --spacing: 16px;
-            --radius: 8px;
+            --radius: 12px;
             --success: #4CAF50;
+            --container-width: 1200px;
+            --header-height: 64px;
+            --danger: #f44336;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         body {
@@ -29,70 +34,103 @@
             background: var(--background);
             color: var(--text);
             line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            padding: 0;
-            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
-            background: #1A1A1A;
+            height: var(--header-height);
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border);
-            padding: 16px 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: var(--container-width);
+            height: 100%;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
 
         .logo img {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover img {
+            transform: scale(1.1);
         }
 
         .logo h1 {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 600;
             color: var(--primary);
+            letter-spacing: -0.5px;
         }
 
         .subtitle {
             font-size: 14px;
             color: var(--text-secondary);
             margin-left: auto;
+            opacity: 0.8;
         }
 
         main {
-            max-width: 1000px;
-            margin: 32px auto;
-            padding: 0 24px;
+            margin-top: var(--header-height);
+            flex: 1;
+            padding: 48px 24px;
+        }
+
+        .container {
+            max-width: var(--container-width);
+            margin: 0 auto;
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 32px;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: start;
         }
 
         .card {
-            background: #1A1A1A;
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(10px);
             border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            padding: 32px;
             border: 1px solid var(--border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
         .card-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             color: var(--text);
-            padding-bottom: 12px;
+            padding-bottom: 16px;
             border-bottom: 2px solid var(--border);
         }
 
         .file-input-container {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         input[type="file"] {
@@ -108,154 +146,195 @@
         .custom-file-input {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
+            justify-content: center;
+            padding: 16px;
             background: var(--primary-light);
             color: var(--text);
             border-radius: var(--radius);
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 500;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             border: 2px solid var(--primary);
         }
 
         .custom-file-input:hover {
             background: var(--primary);
-            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(44, 107, 237, 0.2);
         }
 
         input[type="text"] {
             width: 100%;
-            padding: 12px 16px;
+            padding: 16px;
             border: 2px solid var(--border);
             border-radius: var(--radius);
-            font-size: 14px;
-            font-family: 'Roboto Mono', monospace;
-            margin-bottom: 20px;
-            transition: all 0.2s;
-            background: #1A1A1A;
+            font-size: 16px;
+            font-family: inherit;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+            background: rgba(26, 26, 26, 0.6);
             color: var(--text);
         }
 
         input[type="text"]:focus {
             outline: none;
             border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(44, 107, 237, 0.2);
         }
 
         .button {
             width: 100%;
-            padding: 12px 16px;
+            padding: 16px;
             background: var(--primary);
             color: white;
             border: none;
             border-radius: var(--radius);
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 500;
-            font-family: 'Roboto Mono', monospace;
+            font-family: inherit;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
         }
 
         .button:hover {
             background: #1a54c7;
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(44, 107, 237, 0.2);
         }
 
         .code-display {
-            margin-top: 20px;
-            padding: 16px;
+            margin-top: 24px;
+            padding: 24px;
             background: var(--primary-light);
             border-radius: var(--radius);
             border: 2px solid var(--primary);
             display: none;
+            transition: all 0.3s ease;
         }
 
         .code-display.visible {
             display: block;
-            animation: fadeIn 0.3s ease-in;
+            animation: slideUp 0.4s ease-out;
         }
 
         .code-title {
             font-size: 14px;
             color: var(--text-secondary);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .code-value {
-            font-size: 20px;
+            font-size: 24px;
             color: var(--text);
             font-weight: 600;
             word-break: break-all;
+            letter-spacing: 1px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .error-message {
+            color: var(--danger);
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid var(--danger);
+            padding: 12px;
+            border-radius: var(--radius);
+            margin-top: 16px;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                gap: 32px;
+            }
         }
 
         @media (max-width: 768px) {
-            main {
+            .container {
                 grid-template-columns: 1fr;
-                padding: 16px;
-                margin: 16px auto;
+                gap: 24px;
             }
 
-            .header {
-                padding: 16px;
+            .header-content {
+                padding: 0 16px;
             }
 
-            .logo {
-                flex-wrap: wrap;
+            .logo h1 {
+                font-size: 20px;
             }
 
             .subtitle {
-                margin-left: 0;
-                width: 100%;
-                margin-top: 8px;
+                display: none;
+            }
+
+            main {
+                padding: 32px 16px;
             }
 
             .card {
-                padding: 20px;
+                padding: 24px;
             }
 
             .custom-file-input,
             input[type="text"],
             .button {
-                padding: 10px 14px;
+                padding: 14px;
+                font-size: 14px;
             }
         }
     </style>
 </head>
 <body>
     <header class="header">
-        <div class="logo">
-            <img src="/static/logo.png" alt="Logo" loading="lazy">
-            <h1>ShareWithAll</h1>
-            <p class="subtitle">Simple file sharing</p>
+        <div class="header-content">
+            <div class="logo">
+                <img src="/static/logo.png" alt="Logo" loading="lazy">
+                <h1>ShareWithAll</h1>
+                <p class="subtitle">Simple file sharing</p>
+            </div>
         </div>
     </header>
 
     <main>
-        <div class="card">
-            <h2 class="card-title">Upload File</h2>
-            <form id="uploadForm" onsubmit="handleUpload(event)">
-                <div class="file-input-container">
-                    <div class="custom-file-input" role="button" aria-label="Choose file">Choose File</div>
-                    <input type="file" name="file" required aria-label="File input">
-                </div>
-                <button type="submit" class="button">Upload</button>
-                <div id="codeDisplay" class="code-display">
-                    <div class="code-title">Your file code:</div>
-                    <div class="code-value" id="codeValue"></div>
-                </div>
-            </form>
-        </div>
+        <div class="container">
+            <div class="card">
+                <h2 class="card-title">Upload File</h2>
+                <form id="uploadForm" onsubmit="handleUpload(event)">
+                    <div class="file-input-container">
+                        <div class="custom-file-input" role="button" aria-label="Choose file">Choose File</div>
+                        <input type="file" name="file" required aria-label="File input">
+                    </div>
+                    <button type="submit" class="button">Upload</button>
+                    <div id="codeDisplay" class="code-display">
+                        <div class="code-title">Your file code:</div>
+                        <div class="code-value" id="codeValue"></div>
+                    </div>
+                    <div id="uploadError" class="error-message"></div>
+                </form>
+            </div>
 
-        <div class="card">
-            <h2 class="card-title">Retrieve File</h2>
-            <form id="retrieveForm" onsubmit="handleDownload(event)">
-                <input type="text" name="code" placeholder="Enter file code" required aria-label="File code input">
-                <button type="submit" class="button">Download</button>
-            </form>
+            <div class="card">
+                <h2 class="card-title">Retrieve File</h2>
+                <form id="retrieveForm" onsubmit="handleDownload(event)">
+                    <input type="text" name="code" placeholder="Enter file code" required aria-label="File code input">
+                    <button type="submit" class="button">Download</button>
+                    <div id="downloadError" class="error-message"></div>
+                </form>
+            </div>
         </div>
     </main>
 
@@ -264,6 +343,8 @@
         const customFileInput = document.querySelector('.custom-file-input');
         const codeDisplay = document.getElementById('codeDisplay');
         const codeValue = document.getElementById('codeValue');
+        const uploadError = document.getElementById('uploadError');
+        const downloadError = document.getElementById('downloadError');
         
         fileInput.addEventListener('change', function() {
             customFileInput.textContent = this.files.length > 0 ? this.files[0].name : 'Choose File';
@@ -304,17 +385,21 @@
                         })
                     });
 
+                    const result = await response.json();
+
                     if (!response.ok) {
-                        throw new Error('Upload failed');
+                        throw new Error(result.error || 'Upload failed');
                     }
 
-                    const result = await response.json();
                     codeValue.textContent = result.code;
                     codeDisplay.classList.add('visible');
+                    uploadError.classList.remove('visible');
                     
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('Upload failed. Please try again.');
+                    uploadError.textContent = error.message;
+                    uploadError.classList.add('visible');
+                    codeDisplay.classList.remove('visible');
                 }
             };
 
@@ -327,10 +412,27 @@
             const code = document.querySelector('input[name="code"]').value;
             
             try {
+                const response = await fetch(`/download/${code}`);
+                const contentType = response.headers.get('content-type');
+                
+                if (!response.ok) {
+                    const result = await response.json();
+                    throw new Error(result.error || 'Download failed');
+                }
+
+                if (contentType && contentType.includes('application/json')) {
+                    const result = await response.json();
+                    throw new Error(result.error || 'Download failed');
+                }
+
+                // If we get here, it's a file download
                 window.location.href = `/download/${code}`;
+                downloadError.classList.remove('visible');
+
             } catch (error) {
                 console.error('Error:', error);
-                alert('Download failed. Please check your code and try again.');
+                downloadError.textContent = error.message;
+                downloadError.classList.add('visible');
             }
         }
     </script>

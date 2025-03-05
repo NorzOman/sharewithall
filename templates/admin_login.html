@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Login - ShareWithAll</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2C6BED;
+            --primary-light: #1a3c7a;
+            --text: #E0E0E0;
+            --text-secondary: #A0A0A0;
+            --background: #121212;
+            --border: #2A2A2A;
+            --spacing: 16px;
+            --radius: 12px;
+            --success: #4CAF50;
+            --container-width: 1200px;
+            --header-height: 64px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            height: var(--header-height);
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: var(--container-width);
+            height: 100%;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo img {
+            width: 32px;
+            height: 32px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover img {
+            transform: scale(1.1);
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        main {
+            margin-top: var(--header-height);
+            flex: 1;
+            padding: 48px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 32px;
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: rgba(26, 26, 26, 0.6);
+            color: var(--text);
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(44, 107, 237, 0.2);
+        }
+
+        .button {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background: #1a54c7;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(44, 107, 237, 0.2);
+        }
+
+        .error-message {
+            color: #ff4444;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 16px;
+            }
+
+            .logo h1 {
+                font-size: 20px;
+            }
+
+            main {
+                padding: 32px 16px;
+            }
+
+            .login-card {
+                padding: 24px;
+            }
+
+            input[type="password"],
+            .button {
+                padding: 14px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="/static/logo.png" alt="Logo" loading="lazy">
+                <h1>Admin</h1>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="login-card">
+            <h2 class="card-title">Admin Login</h2>
+            <form method="POST" action="/admin">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="button">Login</button>
+                {% if error %}
+                <div class="error-message" style="display: block;">{{ error }}</div>
+                {% endif %}
+            </form>
+        </div>
+    </main>
+</body>
+</html>
