@@ -3,7 +3,7 @@ import base64
 import os
 import time
 import threading
-import secrets
+import random
 from io import BytesIO
 
 
@@ -38,8 +38,11 @@ def upload():
         except Exception as e:
             return jsonify({'error': 'Invalid base64 data: ' + str(e)}), 400
 
-        # Generate a secure random route ID
-        route_id = secrets.token_urlsafe(8)  # More secure than os.urandom
+        # Generate a 4 digit route ID
+        while True:
+            route_id = str(random.randint(1000, 9999))
+            if route_id not in global_files:
+                break
         
         try:
             # Store file data in memory
