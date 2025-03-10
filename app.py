@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify, send_file
+from flask import Flask, request, render_template, jsonify, send_file, redirect, session
 import base64
 import os
 import time
@@ -6,11 +6,17 @@ import threading
 import random
 from io import BytesIO
 from threading import Lock
+import jwt
+from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY')
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+JWT_SECRET = os.getenv('JWT_SECRET')  # Secret key for JWT
 
+# Global maintenance mode flag
+MAINTENANCE_MODE = False
 
 # Store uploaded files in memory (key = random ID, value = { filename, filedata, mime_type })
 global_files = {}
@@ -38,6 +44,34 @@ def cleanup_expired_files():
 # Start cleanup thread
 cleanup_thread = threading.Thread(target=cleanup_expired_files, daemon=True)
 cleanup_thread.start()
+
+
+def generate_token():
+    """Generate JWT token for admin authentication"""
+    expiration = datetime.utcnow() + timedelta(hours=1)
+    token = jwt.encode(
+        {'admin': True, 'exp': expiration},
+        JWT_SECRET,
+        algorithm='HS256'
+    )
+    return token
+
+
+def verify_token(token):
+    """Verify JWT token"""
+    try:
+        jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+        return True
+    except:
+        return False
+
+
+@app.before_request
+def check_maintenance():
+    if MAINTENANCE_MODE and not request.path.startswith('/admin') and not request.path.startswith('/static'):
+        if request.method == 'GET':
+            return render_template('error.html', message="Oops! Seems like the website is down for maintenance or has been taken down by the admin for now. Please try again later."), 503
+        return jsonify({'error': 'Site is under maintenance'}), 503
 
 
 @app.route('/')
@@ -137,6 +171,42 @@ def download(route_id):
     except Exception as e:
         return jsonify({'error': 'Download failed: ' + str(e)}), 500
 
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if password == ADMIN_PASSWORD:
+            token = generate_token()
+            session['admin_token'] = token  # Store JWT token in session
+            return redirect('/admin/control_panel')
+        else:
+            return render_template('admin_login.html', error='Invalid password')
+    return render_template('admin_login.html')
+
+
+@app.route('/admin/control_panel', methods=['GET', 'POST'])
+def control_panel():
+    global MAINTENANCE_MODE
+    token = session.get('admin_token')
+    if not token or not verify_token(token):
+        return redirect('/admin')
+        
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'clear_memory':
+            with files_lock:
+                global_files.clear()
+            return jsonify({'success': True})
+        elif action == 'take_down':
+            MAINTENANCE_MODE = True
+            return jsonify({'success': True})
+        elif action == 'bring_up':
+            MAINTENANCE_MODE = False
+            return jsonify({'success': True})
+        return jsonify({'error': 'Invalid action'}), 400
+        
+    return render_template('admin_control_panel.html', status=MAINTENANCE_MODE)
 
 if __name__ == '__main__':
     app.run(debug=True)
