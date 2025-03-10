@@ -13,11 +13,11 @@
             --text-secondary: #A0A0A0;
             --background: #121212;
             --border: #2A2A2A;
-            --spacing: 16px;
-            --radius: 12px;
+            --spacing: 12px;
+            --radius: 8px;
             --success: #4CAF50;
-            --container-width: 1200px;
-            --header-height: 64px;
+            --container-width: 900px;
+            --header-height: 56px;
             --danger: #f44336;
         }
 
@@ -33,10 +33,11 @@
             font-family: 'Roboto Mono', monospace;
             background: var(--background);
             color: var(--text);
-            line-height: 1.6;
+            line-height: 1.4;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            font-size: 14px;
         }
 
         .header {
@@ -55,7 +56,7 @@
             max-width: var(--container-width);
             height: 100%;
             margin: 0 auto;
-            padding: 0 24px;
+            padding: 0 16px;
             display: flex;
             align-items: center;
         }
@@ -63,12 +64,12 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
         }
 
         .logo img {
-            width: 32px;
-            height: 32px;
+            width: 24px;
+            height: 24px;
             transition: transform 0.3s ease;
         }
 
@@ -77,14 +78,14 @@
         }
 
         .logo h1 {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 600;
             color: var(--primary);
             letter-spacing: -0.5px;
         }
 
         .subtitle {
-            font-size: 14px;
+            font-size: 12px;
             color: var(--text-secondary);
             margin-left: auto;
             opacity: 0.8;
@@ -93,7 +94,7 @@
         main {
             margin-top: var(--header-height);
             flex: 1;
-            padding: 48px 24px;
+            padding: 32px 16px;
         }
 
         .container {
@@ -101,7 +102,7 @@
             margin: 0 auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 48px;
+            gap: 32px;
             align-items: start;
         }
 
@@ -109,7 +110,7 @@
             background: rgba(26, 26, 26, 0.6);
             backdrop-filter: blur(10px);
             border-radius: var(--radius);
-            padding: 32px;
+            padding: 24px;
             border: 1px solid var(--border);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -120,17 +121,17 @@
         }
 
         .card-title {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
             color: var(--text);
-            padding-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 2px solid var(--border);
         }
 
         .file-input-container {
             position: relative;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
 
         input[type="file"] {
@@ -147,11 +148,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 16px;
+            padding: 12px;
             background: var(--primary-light);
             color: var(--text);
             border-radius: var(--radius);
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
             transition: all 0.3s ease;
             border: 2px solid var(--primary);
@@ -165,12 +166,12 @@
 
         input[type="text"] {
             width: 100%;
-            padding: 16px;
+            padding: 12px;
             border: 2px solid var(--border);
             border-radius: var(--radius);
-            font-size: 16px;
+            font-size: 14px;
             font-family: inherit;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
             transition: all 0.3s ease;
             background: rgba(26, 26, 26, 0.6);
             color: var(--text);
@@ -184,12 +185,12 @@
 
         .button {
             width: 100%;
-            padding: 16px;
+            padding: 12px;
             background: var(--primary);
             color: white;
             border: none;
             border-radius: var(--radius);
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
             font-family: inherit;
             cursor: pointer;
@@ -203,8 +204,8 @@
         }
 
         .code-display {
-            margin-top: 24px;
-            padding: 24px;
+            margin-top: 16px;
+            padding: 16px;
             background: var(--primary-light);
             border-radius: var(--radius);
             border: 2px solid var(--primary);
@@ -218,13 +219,13 @@
         }
 
         .code-title {
-            font-size: 14px;
+            font-size: 12px;
             color: var(--text-secondary);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .code-value {
-            font-size: 24px;
+            font-size: 20px;
             color: var(--text);
             font-weight: 600;
             word-break: break-all;
@@ -235,15 +236,64 @@
             color: var(--danger);
             background: rgba(244, 67, 54, 0.1);
             border: 1px solid var(--danger);
-            padding: 12px;
+            padding: 8px;
             border-radius: var(--radius);
-            margin-top: 16px;
+            margin-top: 12px;
             display: none;
+            font-size: 12px;
         }
 
         .error-message.visible {
             display: block;
             animation: slideUp 0.4s ease-out;
+        }
+
+        .recent-files {
+            margin-top: 32px;
+            grid-column: 1 / -1;
+        }
+
+        .files-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .file-item {
+            background: rgba(26, 26, 26, 0.6);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .file-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .file-code {
+            padding: 6px 12px;
+            background: var(--primary-light);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-weight: 500;
+            font-size: 14px;
         }
 
         @keyframes slideUp {
@@ -259,22 +309,22 @@
 
         @media (max-width: 1024px) {
             .container {
-                gap: 32px;
+                gap: 24px;
             }
         }
 
         @media (max-width: 768px) {
             .container {
                 grid-template-columns: 1fr;
-                gap: 24px;
+                gap: 16px;
             }
 
             .header-content {
-                padding: 0 16px;
+                padding: 0 12px;
             }
 
             .logo h1 {
-                font-size: 20px;
+                font-size: 16px;
             }
 
             .subtitle {
@@ -282,18 +332,31 @@
             }
 
             main {
-                padding: 32px 16px;
+                padding: 24px 12px;
             }
 
             .card {
-                padding: 24px;
+                padding: 16px;
             }
 
             .custom-file-input,
             input[type="text"],
             .button {
-                padding: 14px;
-                font-size: 14px;
+                padding: 10px;
+                font-size: 13px;
+            }
+
+            .file-item {
+                padding: 8px 12px;
+            }
+
+            .file-meta {
+                display: flex;
+                gap: 12px;
+            }
+
+            .file-meta br {
+                display: none;
             }
         }
     </style>
@@ -334,6 +397,23 @@
                     <button type="submit" class="button">Download</button>
                     <div id="downloadError" class="error-message"></div>
                 </form>
+            </div>
+
+            <div class="recent-files card">
+                <h2 class="card-title">Recent Uploads</h2>
+                <div class="files-list">
+                    {% for file in active_files %}
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-name">{{ file.filename }}</div>
+                            <div class="file-meta">
+                                Expires: {{ file.expires_at }}
+                            </div>
+                        </div>
+                        <div class="file-code">{{ file.route_id }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </main>
@@ -394,6 +474,9 @@
                     codeValue.textContent = result.code;
                     codeDisplay.classList.add('visible');
                     uploadError.classList.remove('visible');
+                    
+                    // Refresh page to show new upload in recent files
+                    setTimeout(() => window.location.reload(), 1500);
                     
                 } catch (error) {
                     console.error('Error:', error);
