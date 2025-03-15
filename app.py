@@ -77,21 +77,7 @@ def check_maintenance():
 @app.route('/')
 def base():
     try:
-        all_files = []
-        current_time = time.time()
-        
-        with files_lock:
-            for route_id, file_info in global_files.items():
-                is_expired = current_time - file_info['created_at'] > 900  # 15 minutes
-                if not is_expired:  # Only show non-expired files
-                    all_files.append({
-                        'route_id': route_id,
-                        'filename': file_info['filename'],
-                        'created_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_info['created_at'])),
-                        'expires_at': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_info['created_at'] + 900))
-                    })
-
-        return render_template('base.html', active_files=all_files)
+        return render_template('base.html')
     except Exception as e:
         return jsonify({'error': 'Failed to render template: ' + str(e)}), 500
 

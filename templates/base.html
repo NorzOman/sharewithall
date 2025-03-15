@@ -2,337 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ShareWithAll</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4A90E2;
-            --primary-light: #6BA4E9; 
-            --text: #2C3E50;
-            --text-secondary: #7F8C8D;
-            --background: #F5F7FA;
-            --border: #E1E8ED;
-            --spacing: 12px;
-            --radius: 12px;
-            --success: #2ECC71;
-            --container-width: 800px;
-            --header-height: 56px;
-            --danger: #E74C3C;
-            --card-bg: #FFFFFF;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--background);
-            color: var(--text);
-            line-height: 1.4;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            font-size: 14px;
-        }
-
-        .header {
-            height: var(--header-height);
-            background: var(--card-bg);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            max-width: var(--container-width);
-            height: 100%;
-            margin: 0 auto;
-            padding: 0 16px;
-            display: flex;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo img {
-            width: 28px;
-            height: 28px;
-            transition: transform 0.3s ease;
-        }
-
-        .logo:hover img {
-            transform: scale(1.1);
-        }
-
-        .logo h1 {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-left: auto;
-        }
-
-        main {
-            margin-top: calc(var(--header-height) + 20px);
-            flex: 1;
-            padding: 24px 16px;
-        }
-
-        .container {
-            max-width: var(--container-width);
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            align-items: start;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--text);
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--border);
-        }
-
-        .file-input-container {
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        input[type="file"] {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .custom-file-input {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px;
-            background: var(--primary-light);
-            color: white;
-            border-radius: var(--radius);
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .custom-file-input:hover {
-            background: var(--primary);
-            transform: translateY(-1px);
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 14px;
-            font-family: inherit;
-            margin-bottom: 16px;
-            transition: all 0.3s ease;
-            background: white;
-            color: var(--text);
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(74,144,226,0.2);
-        }
-
-        .button {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: var(--radius);
-            font-size: 14px;
-            font-weight: 500;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .button:hover {
-            background: var(--primary-light);
-            transform: translateY(-1px);
-        }
-
-        .code-display {
-            margin-top: 16px;
-            padding: 16px;
-            background: #F1F7FF;
-            border-radius: var(--radius);
-            border: 2px solid var(--primary-light);
-            display: none;
-            transition: all 0.3s ease;
-        }
-
-        .code-display.visible {
-            display: block;
-            animation: slideUp 0.4s ease-out;
-        }
-
-        .code-title {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-
-        .code-value {
-            font-size: 20px;
-            color: var(--primary);
-            font-weight: 600;
-            word-break: break-all;
-            letter-spacing: 1px;
-        }
-
-        .error-message {
-            color: var(--danger);
-            background: #FFF5F5;
-            border: 1px solid var(--danger);
-            padding: 8px;
-            border-radius: var(--radius);
-            margin-top: 12px;
-            display: none;
-            font-size: 12px;
-        }
-
-        .error-message.visible {
-            display: block;
-            animation: slideUp 0.4s ease-out;
-        }
-
-        .recent-files {
-            margin-top: 24px;
-            grid-column: 1 / -1;
-        }
-
-        .files-list {
-            display: grid;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .file-item {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            transition: transform 0.2s ease;
-        }
-
-        .file-item:hover {
-            transform: translateX(4px);
-        }
-
-        .file-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .file-name {
-            font-weight: 500;
-            color: var(--text);
-            font-size: 14px;
-        }
-
-        .file-meta {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .file-code {
-            padding: 6px 12px;
-            background: #F1F7FF;
-            border-radius: var(--radius);
-            color: var(--primary);
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        @keyframes slideUp {
-            from { 
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-
-            .header-content {
-                padding: 0 12px;
-            }
-
-            .logo h1 {
-                font-size: 18px;
-            }
-
-            .subtitle {
-                display: none;
-            }
-
-            main {
-                padding: 20px 12px;
-            }
-
-            .card {
-                padding: 16px;
-            }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareWithAll - Community File Sharing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
     <header class="header">
@@ -340,19 +13,21 @@
             <div class="logo">
                 <img src="/static/logo.png" alt="Logo" loading="lazy">
                 <h1>ShareWithAll</h1>
-                <p class="subtitle">Simple & Ad-Free File Sharing</p>
             </div>
+            <p class="subtitle">Community File Sharing Project</p>
         </div>
     </header>
 
     <main>
         <div class="container">
             <div class="card">
-                <h2 class="card-title">Upload File</h2>
+                <h2 class="card-title">Upload File or Text</h2>
                 <form id="uploadForm" onsubmit="handleUpload(event)">
-                    <div class="file-input-container">
-                        <div class="custom-file-input" role="button" aria-label="Choose file">Choose File</div>
-                        <input type="file" name="file" required aria-label="File input">
+                    <textarea class="text-input" placeholder="Enter text to share..." id="textInput"></textarea>
+                    <div class="or-divider">-- OR --</div>
+                    <div class="custom-file-input" role="button" aria-label="Choose file">
+                        <label for="fileInput">Choose File</label>
+                        <input type="file" id="fileInput" name="file" aria-label="File input">
                     </div>
                     <button type="submit" class="button">Upload</button>
                     <div id="codeDisplay" class="code-display">
@@ -371,28 +46,19 @@
                     <div id="downloadError" class="error-message"></div>
                 </form>
             </div>
+        </div>
 
-            <div class="recent-files card">
-                <h2 class="card-title">Recent Uploads</h2>
-                <div class="files-list">
-                    {% for file in active_files %}
-                    <div class="file-item">
-                        <div class="file-info">
-                            <div class="file-name">{{ file.filename }}</div>
-                            <div class="file-meta">
-                                Expires: {{ file.expires_at }}
-                            </div>
-                        </div>
-                        <div class="file-code">{{ file.route_id }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
+        <div class="notice-box">
+            <p><strong>Community Project:</strong> This is a community project - bruteforcing is not cool , just dont do it.</p>
+            <p><strong>How it works:</strong> Files are converted to Base64 format and stored temporarily in server memory.</p>
+            <p><strong>Time Limit:</strong> Files automatically delete after 10 minutes for security.</p>
+            <p><strong>Purpose:</strong> Built for students to easily share study materials, solutions, and PDFs.</p>
         </div>
     </main>
 
     <script>
-        const fileInput = document.querySelector('input[type="file"]');
+        const fileInput = document.getElementById('fileInput');
+        const textInput = document.getElementById('textInput');
         const customFileInput = document.querySelector('.custom-file-input');
         const codeDisplay = document.getElementById('codeDisplay');
         const codeValue = document.getElementById('codeValue');
@@ -400,14 +66,29 @@
         const downloadError = document.getElementById('downloadError');
         
         fileInput.addEventListener('change', function() {
-            customFileInput.textContent = this.files.length > 0 ? this.files[0].name : 'Choose File';
+            const label = customFileInput.querySelector('label');
+            label.textContent = this.files.length > 0 ? this.files[0].name : 'Choose File';
+            textInput.value = ''; // Clear text input when file is selected
+        });
+
+        textInput.addEventListener('input', function() {
+            if (this.value) {
+                fileInput.value = ''; // Clear file input when text is entered
+                const label = customFileInput.querySelector('label');
+                label.textContent = 'Choose File';
+            }
         });
 
         function validateForm() {
-            const file = document.querySelector('input[type="file"]').files[0];
-            const maxSize = 10 * 1024 * 1024; // 10MB
+            const file = fileInput.files[0];
+            const text = textInput.value.trim();
             
-            if (file && file.size > maxSize) {
+            if (!file && !text) {
+                alert('Please either enter text or choose a file');
+                return false;
+            }
+            
+            if (file && file.size > 10 * 1024 * 1024) { // 10MB
                 alert('File size must be less than 10MB');
                 return false;
             }
@@ -419,44 +100,60 @@
             
             if (!validateForm()) return;
 
-            const file = fileInput.files[0];
-            const reader = new FileReader();
+            const text = textInput.value.trim();
+            if (text) {
+                // Create a text file with random name
+                const randomName = Math.random().toString(36).substring(2, 8);
+                const file = new File([text], `${randomName}.txt`, {type: 'text/plain'});
+                const reader = new FileReader();
 
-            reader.onload = async function(e) {
-                const base64Data = e.target.result.split(',')[1];
-                
-                try {
-                    const response = await fetch('/upload', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            filename: file.name,
-                            filedata: base64Data,
-                            mime_type: file.type
-                        })
-                    });
+                reader.onload = async function(e) {
+                    await uploadFile(file, e.target.result.split(',')[1]);
+                };
 
-                    const result = await response.json();
+                reader.readAsDataURL(file);
+            } else {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
 
-                    if (!response.ok) {
-                        throw new Error(result.error || 'Upload failed');
-                    }
+                reader.onload = async function(e) {
+                    await uploadFile(file, e.target.result.split(',')[1]);
+                };
 
-                    codeValue.textContent = result.code;
-                    codeDisplay.classList.add('visible');
-                    uploadError.classList.remove('visible');
+                reader.readAsDataURL(file);
+            }
+        }
 
-                } catch (error) {
-                    console.error('Error:', error);
-                    uploadError.textContent = error.message;
-                    uploadError.classList.add('visible');
-                    codeDisplay.classList.remove('visible');
+        async function uploadFile(file, base64Data) {
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: file.name,
+                        filedata: base64Data,
+                        mime_type: file.type
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Upload failed');
                 }
-            };
 
-            reader.readAsDataURL(file);
+                codeValue.textContent = result.code;
+                codeDisplay.classList.add('visible');
+                uploadError.classList.remove('visible');
+
+            } catch (error) {
+                console.error('Error:', error);
+                uploadError.textContent = error.message;
+                uploadError.classList.add('visible');
+                codeDisplay.classList.remove('visible');
+            }
         }
 
         async function handleDownload(event) {
