@@ -25,9 +25,9 @@
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <textarea class="text-input" placeholder="Enter text to share..." id="textInput"></textarea>
                     <div class="or-divider">-- OR --</div>
-                    <div class="custom-file-input" role="button" aria-label="Choose file">
-                        <label for="fileInput">Choose File</label>
+                    <div class="custom-file-input">
                         <input type="file" id="fileInput" name="file" aria-label="File input">
+                        <label for="fileInput" onclick="document.getElementById('fileInput').click()">Choose File</label>
                     </div>
                     <button type="submit" class="button">Upload</button>
                     <div id="codeDisplay" class="code-display">
