@@ -27,7 +27,7 @@
                     <div class="or-divider">-- OR --</div>
                     <div class="custom-file-input">
                         <input type="file" id="fileInput" name="file" aria-label="File input">
-                        <label for="fileInput" onclick="document.getElementById('fileInput').click()">Choose File</label>
+                        <label for="fileInput" id="fileInputLabel">Choose File</label>
                     </div>
                     <button type="submit" class="button">Upload</button>
                     <div id="codeDisplay" class="code-display">
@@ -59,23 +59,38 @@
     <script>
         const fileInput = document.getElementById('fileInput');
         const textInput = document.getElementById('textInput');
-        const customFileInput = document.querySelector('.custom-file-input');
+        const fileInputLabel = document.getElementById('fileInputLabel');
         const codeDisplay = document.getElementById('codeDisplay');
         const codeValue = document.getElementById('codeValue');
         const uploadError = document.getElementById('uploadError');
         const downloadError = document.getElementById('downloadError');
         
-        fileInput.addEventListener('change', function() {
-            const label = customFileInput.querySelector('label');
-            label.textContent = this.files.length > 0 ? this.files[0].name : 'Choose File';
-            textInput.value = ''; // Clear text input when file is selected
+        // Disable file input when text is entered
+        textInput.addEventListener('input', function() {
+            if (this.value.trim()) {
+                fileInput.disabled = true;
+                fileInputLabel.style.opacity = '0.5';
+                fileInputLabel.style.cursor = 'not-allowed';
+                fileInput.value = ''; // Clear any selected file
+                fileInputLabel.textContent = 'Choose File';
+            } else {
+                fileInput.disabled = false;
+                fileInputLabel.style.opacity = '1';
+                fileInputLabel.style.cursor = 'pointer';
+            }
         });
 
-        textInput.addEventListener('input', function() {
-            if (this.value) {
-                fileInput.value = ''; // Clear file input when text is entered
-                const label = customFileInput.querySelector('label');
-                label.textContent = 'Choose File';
+        // Disable text input when file is selected
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                textInput.disabled = true;
+                textInput.style.opacity = '0.5';
+                textInput.value = ''; // Clear any entered text
+                fileInputLabel.textContent = this.files[0].name;
+            } else {
+                textInput.disabled = false;
+                textInput.style.opacity = '1';
+                fileInputLabel.textContent = 'Choose File';
             }
         });
 
@@ -147,6 +162,16 @@
                 codeValue.textContent = result.code;
                 codeDisplay.classList.add('visible');
                 uploadError.classList.remove('visible');
+
+                // Reset form after successful upload
+                textInput.disabled = false;
+                textInput.style.opacity = '1';
+                textInput.value = '';
+                fileInput.disabled = false;
+                fileInputLabel.style.opacity = '1';
+                fileInputLabel.style.cursor = 'pointer';
+                fileInput.value = '';
+                fileInputLabel.textContent = 'Choose File';
 
             } catch (error) {
                 console.error('Error:', error);
