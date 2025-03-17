@@ -5,205 +5,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShareWithAll - Community File Sharing</title>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        :root {
+            --primary: #00ff00;
+            --text: #ffffff;
+            --text-secondary: #a0a0a0;
+            --background: #1a1d21;
+            --border: #2a2e32;
+            --radius: 12px;
+            --container-width: 1200px;
+            --header-height: 70px;
+            --card-bg: #22262a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ubuntu Mono', monospace;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .logo h1 {
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 22px;
+            color: var(--primary);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .sad-samurai {
+            max-width: 200px;
+            margin: 20px auto;
+            border-radius: var(--radius);
+        }
+
+        @media (max-width: 768px) {
+            .logo h1 {
+                font-size: 28px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .card-title {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+
+            .sad-samurai {
+                max-width: 150px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 24px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+                margin-bottom: 20px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .sad-samurai {
+                max-width: 120px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <img src="/static/logo.png" alt="Logo" loading="lazy">
-                <h1>ShareWithAll</h1>
-            </div>
-            <p class="subtitle">Community File Sharing Project</p>
+        <div class="logo">
+            <h1>ShareWithAll</h1>
         </div>
+        <p class="subtitle">Community File Sharing Project</p>
     </header>
 
-    <main>
-        <div class="container">
-            <div class="card">
-                <h2 class="card-title">Upload File or Text</h2>
-                <form id="uploadForm" onsubmit="handleUpload(event)">
-                    <textarea class="text-input" placeholder="Enter text to share..." id="textInput"></textarea>
-                    <div class="or-divider">-- OR --</div>
-                    <div class="custom-file-input">
-                        <input type="file" id="fileInput" name="file" aria-label="File input" accept="*">
-                        <label for="fileInput" id="fileInputLabel">Choose File</label>
-                    </div>
-                    <button type="submit" class="button">Upload</button>
-                    <div id="codeDisplay" class="code-display">
-                        <div class="code-title">Your file code:</div>
-                        <div class="code-value" id="codeValue"></div>
-                    </div>
-                    <div id="uploadError" class="error-message"></div>
-                </form>
-            </div>
-
-            <div class="card">
-                <h2 class="card-title">Retrieve File</h2>
-                <form id="retrieveForm" onsubmit="handleDownload(event)">
-                    <input type="text" name="code" placeholder="Enter file code" required aria-label="File code input">
-                    <button type="submit" class="button">Download</button>
-                    <div id="downloadError" class="error-message"></div>
-                </form>
-            </div>
-        </div>
-
-        <div class="notice-box">
-            <p><strong>Community Project:</strong> This is a community project - bruteforcing is not cool , just dont do it.</p>
-            <p><strong>How it works:</strong> Files are converted to Base64 format and stored temporarily in server memory.</p>
-            <p><strong>Time Limit:</strong> Files automatically delete after 10 minutes for security.</p>
-            <p><strong>Purpose:</strong> Built for students to easily share study materials, solutions, and PDFs.</p>
+    <main class="container">
+        <div class="card">
+            <h2 class="card-title">The project has been discontinued.... :/</h2>
+            <img src="{{ url_for('static', filename='image.png') }}" alt="Sad Samurai" class="sad-samurai">
         </div>
     </main>
-
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const textInput = document.getElementById('textInput');
-        const fileInputLabel = document.getElementById('fileInputLabel');
-        const codeDisplay = document.getElementById('codeDisplay');
-        const codeValue = document.getElementById('codeValue');
-        const uploadError = document.getElementById('uploadError');
-        const downloadError = document.getElementById('downloadError');
-
-        // Handle file input reset on cancel
-        fileInput.addEventListener('click', function(event) {
-            this.value = null; // Reset file input
-        });
-
-        fileInput.addEventListener('change', function() {
-            if (this.files.length > 0) {
-                textInput.disabled = true;
-                textInput.value = '';
-                fileInputLabel.textContent = this.files[0].name;
-            } else {
-                textInput.disabled = false;
-                fileInputLabel.textContent = 'Choose File';
-            }
-        });
-
-        textInput.addEventListener('input', function() {
-            if (this.value.trim()) {
-                fileInput.disabled = true;
-                fileInput.value = '';
-                fileInputLabel.textContent = 'Choose File';
-            } else {
-                fileInput.disabled = false;
-            }
-        });
-
-        function validateForm() {
-            const file = fileInput.files[0];
-            const text = textInput.value.trim();
-            
-            if (!file && !text) {
-                alert('Please either enter text or choose a file');
-                return false;
-            }
-            
-            if (file && file.size > 10 * 1024 * 1024) { // 10MB
-                alert('File size must be less than 10MB');
-                return false;
-            }
-            return true;
-        }
-
-        async function handleUpload(event) {
-            event.preventDefault();
-            
-            if (!validateForm()) return;
-
-            const text = textInput.value.trim();
-            if (text) {
-                // Create a text file with random name
-                const randomName = Math.random().toString(36).substring(2, 8);
-                const file = new File([text], `${randomName}.txt`, {type: 'text/plain'});
-                const reader = new FileReader();
-
-                reader.onload = async function(e) {
-                    await uploadFile(file, e.target.result.split(',')[1]);
-                };
-
-                reader.readAsDataURL(file);
-            } else {
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-
-                reader.onload = async function(e) {
-                    await uploadFile(file, e.target.result.split(',')[1]);
-                };
-
-                reader.readAsDataURL(file);
-            }
-        }
-
-        async function uploadFile(file, base64Data) {
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        filename: file.name,
-                        filedata: base64Data,
-                        mime_type: file.type
-                    })
-                });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.error || 'Upload failed');
-                }
-
-                codeValue.textContent = result.code;
-                codeDisplay.classList.add('visible');
-                uploadError.classList.remove('visible');
-
-                // Reset form after successful upload
-                textInput.disabled = false;
-                textInput.value = '';
-                fileInput.disabled = false;
-                fileInput.value = '';
-                fileInputLabel.textContent = 'Choose File';
-
-            } catch (error) {
-                console.error('Error:', error);
-                uploadError.textContent = error.message;
-                uploadError.classList.add('visible');
-                codeDisplay.classList.remove('visible');
-            }
-        }
-
-        async function handleDownload(event) {
-            event.preventDefault();
-            
-            const code = document.querySelector('input[name="code"]').value;
-            
-            try {
-                const response = await fetch(`/download/${code}`);
-                const contentType = response.headers.get('content-type');
-                
-                if (!response.ok) {
-                    const result = await response.json();
-                    throw new Error(result.error || 'Download failed');
-                }
-
-                if (contentType && contentType.includes('application/json')) {
-                    const result = await response.json();
-                    throw new Error(result.error || 'Download failed');
-                }
-
-                // If we get here, it's a file download
-                window.location.href = `/download/${code}`;
-                downloadError.classList.remove('visible');
-
-            } catch (error) {
-                console.error('Error:', error);
-                downloadError.textContent = error.message;
-                downloadError.classList.add('visible');
-            }
-        }
-    </script>
 </body>
 </html>
