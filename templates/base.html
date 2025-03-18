@@ -4,124 +4,180 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShareWithAll - Community File Sharing</title>
-    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #00ff00;
-            --text: #ffffff;
-            --text-secondary: #a0a0a0;
-            --background: #1a1d21;
-            --border: #2a2e32;
-            --radius: 12px;
-            --container-width: 1200px;
-            --header-height: 70px;
-            --card-bg: #22262a;
+            --primary-color: #000000;
+            --secondary-color: #0066CC;
+            --text-color: #1D1D1F;
+            --background-color: #FFFFFF;
+            --accent-color: #86868B;
+            --hover-color: #0077ED;
+            --border-color: #D2D2D7;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Ubuntu Mono', monospace;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
-            background: var(--background);
-            color: var(--text);
-            line-height: 1.6;
+            background-color: var(--background-color);
+            color: var(--text-color);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            max-width: 1440px;
+            margin: 0 auto;
+            overflow-x: hidden;
         }
 
         .header {
-            margin-bottom: 40px;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .logo h1 {
-            font-size: 32px;
-            color: var(--primary);
-            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 2.5rem;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
         }
 
         .subtitle {
-            font-size: 18px;
-            color: var(--text-secondary);
-            margin-bottom: 40px;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
         }
 
         .container {
+            padding: 3rem 1.5rem;
+            flex: 1;
+            background: linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%);
+            max-width: 1200px;
+            margin: 0 auto;
             width: 100%;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             max-width: 600px;
             margin: 0 auto;
         }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 30px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            border: 1px solid var(--border);
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
         }
 
         .card-title {
-            font-size: 22px;
-            color: var(--primary);
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--border);
+            color: var(--text-color);
+            font-weight: 600;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.5px;
         }
 
-        .sad-samurai {
-            max-width: 200px;
-            margin: 20px auto;
-            border-radius: var(--radius);
+        .preview-image {
+            position: relative;
+            cursor: pointer;
+            max-width: 300px;
+            margin: 2rem auto;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .preview-image img {
+            width: 100%;
+            height: auto;
+            filter: blur(5px);
+            transition: filter 0.3s ease;
+        }
+
+        .preview-image::after {
+            content: 'Click to Preview';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .preview-image:hover::after {
+            opacity: 1;
+        }
+
+        .preview-image:hover img {
+            filter: blur(3px);
         }
 
         @media (max-width: 768px) {
             .logo h1 {
-                font-size: 28px;
+                font-size: 2rem;
             }
 
             .subtitle {
-                font-size: 16px;
-                margin-bottom: 30px;
+                font-size: 1rem;
+            }
+
+            .container {
+                padding: 2rem 1rem;
             }
 
             .card {
-                padding: 20px;
+                padding: 1.5rem;
             }
 
             .card-title {
-                font-size: 20px;
-                margin-bottom: 20px;
+                font-size: 1.5rem;
             }
 
-            .sad-samurai {
-                max-width: 150px;
+            .preview-image {
+                max-width: 250px;
             }
         }
 
         @media (max-width: 480px) {
             .logo h1 {
-                font-size: 24px;
+                font-size: 1.8rem;
             }
 
-            .subtitle {
-                font-size: 14px;
-                margin-bottom: 20px;
+            .container {
+                padding: 1.5rem 1rem;
             }
 
             .card {
-                padding: 15px;
+                padding: 1.2rem;
             }
 
-            .sad-samurai {
-                max-width: 120px;
+            .preview-image {
+                max-width: 200px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
             }
         }
     </style>
@@ -136,8 +192,11 @@
 
     <main class="container">
         <div class="card">
-            <h2 class="card-title">The project has been discontinued.... :/</h2>
-            <img src="{{ url_for('static', filename='image.png') }}" alt="Sad Samurai" class="sad-samurai">
+            <h2 class="card-title">Project Under Development</h2>
+            <p>We're working hard to bring you something amazing. Check back soon!</p>
+            <div class="preview-image">
+                <img src="{{ url_for('static', filename='image.png') }}" alt="Development Preview">
+            </div>
         </div>
     </main>
 </body>
