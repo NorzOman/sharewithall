@@ -10,26 +10,55 @@ import dropbox
 import random
 import string
 import time
+import requests
 
 
 '''Initialize environment variables'''
-ACCESS_TOKEN = os.getenv("DROPBOX_ACCESS_TOKEN") 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SERVICE_ROLE_SECRET")
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+APP_KEY = os.getenv("APP_KEY")
+APP_SECRET = os.getenv("APP_SECRET")
+REFRESH_TOKEN = os.getenv("DROPBOX_REFRESH_TOKEN")
 
 
 '''Initialize Flask app and databases'''
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-dbx = dropbox.Dropbox(ACCESS_TOKEN)
 
 
 # --------------------------------------------------------------------
 # -------------------START OF CRITICAL FUNCS--------------------------
 # --------------------------------------------------------------------
+
+
+def get_fresh_dropbox_token():
+    """Fetch a fresh Dropbox access token using refresh token."""
+    try:
+        url = "https://api.dropbox.com/oauth2/token"
+        data = {
+            "grant_type": "refresh_token",
+            "refresh_token": REFRESH_TOKEN,
+            "client_id": APP_KEY,
+            "client_secret": APP_SECRET
+        }
+
+        response = requests.post(url, data=data)
+        response.raise_for_status()  # Raise error if request fails
+
+        access_token = response.json().get("access_token")
+        if not access_token:
+            raise ValueError("Failed to retrieve access token")
+
+        print("[INFO] Dropbox token refreshed successfully.")
+        return access_token  
+
+    except requests.exceptions.RequestException as req_err:
+        print(f"[ERROR] Request failed while refreshing Dropbox token: {req_err}")
+        return None
+
 
 
 """Fetch direct file URL from Supabase using a 4-digit code."""
@@ -49,6 +78,12 @@ def get_file_from_supabase(access_code):
 
 """Uploads a file to Dropbox and returns an access code for the shared link."""
 def upload_files(file):
+    latest_token = get_fresh_dropbox_token()
+    if not latest_token:
+        return {"error": "Failed to fetch token. Please try again later, or report to dev (Error Code: TOKEN-FAIL-DROP-01)"}
+
+    dbx = dropbox.Dropbox(latest_token)
+    
     file_ext = file.filename.split(".")[-1]
     file_id = f"{uuid.uuid4().hex}.{file_ext}"
 
@@ -202,6 +237,12 @@ def clear_dropbox():
     if not session.get('admin_logged_in'):
         return jsonify({"error": "Unauthorized"}), 401
         
+    latest_token = get_fresh_dropbox_token()
+    if not latest_token:
+        return {"error": "Failed to fetch Dropbox token."}
+
+    dbx = dropbox.Dropbox(latest_token)
+    
     try:
         # Get all URLs from the Files table
         response = supabase.table("Files").select("url").execute()
