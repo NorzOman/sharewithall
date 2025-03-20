@@ -121,6 +121,11 @@ def share_file():
         if file.filename == "":
             return jsonify({"error": "No selected file"}), 400
 
+        # Check if the file size exceeds 3MB
+        MAX_FILE_SIZE = 3 * 1024 * 1024  # 3MB in bytes
+        if file.content_length > MAX_FILE_SIZE:
+            return jsonify({"error": "File size exceeds 3MB limit"}), 400
+
         result = upload_files(file)
         
         if "error" in result:

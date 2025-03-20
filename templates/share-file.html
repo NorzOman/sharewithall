@@ -92,7 +92,7 @@
         // File upload form handler
         document.getElementById("fileShareForm").addEventListener("submit", async function(event) {
             event.preventDefault();
-            
+
             const uploadStatus = document.getElementById("uploadStatus");
             uploadStatus.style.display = "block";
             uploadStatus.innerHTML = `
@@ -104,6 +104,19 @@
                         <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">Uploading your file...</p>
                     </div>
                 </div>`;
+
+            const fileInput = document.getElementById("fileInput"); // Assume your file input field has this ID.
+            const file = fileInput.files[0];
+
+            // Check if a file is selected and if it exceeds 3MB
+            const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB in bytes
+            if (file && file.size > MAX_FILE_SIZE) {
+                uploadStatus.innerHTML = `
+                    <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
+                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">File size exceeds the 3MB limit.</p>
+                    </div>`;
+                return; // Stop the form submission if the file is too large
+            }
 
             try {
                 const formData = new FormData(this);
