@@ -34,6 +34,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # --------------------------------------------------------------------
 
 
+'''Function to get a fresh Dropbox token'''
 def get_fresh_dropbox_token():
     """Fetch a fresh Dropbox access token using refresh token."""
     try:
