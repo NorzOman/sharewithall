@@ -1,6 +1,7 @@
 '''Necessary imports for the projects'''
 from flask import Flask, render_template, request, jsonify , redirect, url_for, session
 from supabase import create_client
+from urllib.parse import urlparse
 import os
 import uuid
 import dropbox
@@ -100,11 +101,14 @@ def upload_files(file):
 
     return {"success": True, "code": access_code}
 
+
+
+
 '''Start of routes'''
 
 @app.route('/')
 def base():
-    return render_template('error.html')
+    return render_template('base.html')
 
 @app.route('/share-file', methods=['GET','POST']) 
 def share_file():
@@ -189,8 +193,12 @@ def clear_dropbox():
     try:
         # Get all URLs from the Files table
         response = supabase.table("Files").select("url").execute()
+        if not response.data:
+            print("[ERROR] No URLs found in the database.")
+            return jsonify({"error": "No URLs found in the database."}), 404
+        
         urls = [record['url'] for record in response.data]
-        print(f"[DEBUG] URLs: {urls}")
+        print(f"[DEBUG] URLs to delete: {urls}")
 
         # Process URLs in batches of 5
         batch_size = 5
@@ -199,13 +207,25 @@ def clear_dropbox():
             
             # Send delete requests for current batch
             for url in batch:
+                file_path = None  # Initialize to avoid reference errors
                 try:
-                    # Extract file path from Dropbox URL and delete
-                    file_path = url.split('dropbox.com')[-1].split('?')[0]  # Remove query params
-                    print(f"[DEBUG] Deleting file: {file_path}")
+                    # Extract filename from URL and create file path
+                    parsed_url = urlparse(url)
+                    filename = os.path.basename(parsed_url.path)
+                    file_path = f"/{filename}"
+                    
+                    print(f"[DEBUG] Attempting to delete file: {file_path}")
                     dbx.files_delete_v2(file_path)
-                except Exception as delete_error:
-                    print(f"[ERROR] Failed to delete file {file_path}: {str(delete_error)}")
+                    print(f"[DEBUG] Successfully deleted: {file_path}")
+                except dropbox.exceptions.ApiError as delete_error:
+                    # Handle specific Dropbox errors
+                    if 'not_found' in str(delete_error):
+                        print(f"[INFO] File not found, possibly already deleted: {file_path}")
+                    else:
+                        print(f"[ERROR] Failed to delete file {file_path}: {str(delete_error)}")
+                except Exception as general_error:
+                    # Catch any other exceptions
+                    print(f"[ERROR] Unexpected error deleting {file_path}: {str(general_error)}")
                     continue
             
             # Wait 3 seconds between batches to avoid rate limiting
@@ -213,8 +233,8 @@ def clear_dropbox():
                 time.sleep(3)
                 
         # Clear the database table after deleting files
-        supabase.table("Files").delete().neq("id", 0).execute()
-        print(f"[DEBUG] Files cleared successfully")
+        #supabase.table("Files").delete().neq("id", 0).execute()
+        #print("[DEBUG] Files cleared successfully from database.")
         return jsonify({"success": True})
         
     except Exception as e:
