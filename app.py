@@ -104,7 +104,7 @@ def upload_files(file):
 
 @app.route('/')
 def base():
-    return render_template('base.html')
+    return render_template('error.html')
 
 @app.route('/share-file', methods=['GET','POST']) 
 def share_file():
