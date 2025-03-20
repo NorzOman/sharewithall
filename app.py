@@ -17,7 +17,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
 '''Initialize Flask app and databases'''
 app = Flask(__name__)
-app.secret_key = "hahasuperkey"
+app.secret_key = os.getenv("SECRET_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 dbx = dropbox.Dropbox(ACCESS_TOKEN)
 
