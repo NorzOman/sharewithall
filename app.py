@@ -238,8 +238,8 @@ def clear_dropbox():
                 time.sleep(3)
                 
         # Clear the database table after deleting files
-        #supabase.table("Files").delete().neq("id", 0).execute()
-        #print("[DEBUG] Files cleared successfully from database.")
+        supabase.table("Files").delete().neq("id", 0).execute()
+        print("[DEBUG] Files cleared successfully from database.")
         return jsonify({"success": True})
         
     except Exception as e:

@@ -86,9 +86,23 @@
     <script>
         document.getElementById("textShareForm").addEventListener("submit", async function(event) {
             event.preventDefault();
-
             const uploadStatus = document.getElementById("uploadStatus");
             uploadStatus.style.display = "block";
+
+            // Check content size before showing loading state
+            const content = this.elements.content.value;
+            const contentSize = new Blob([content]).size;
+            const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB in bytes
+
+            if (contentSize > MAX_FILE_SIZE) {
+                uploadStatus.innerHTML = `
+                    <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
+                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">Content size exceeds the 3MB limit.</p>
+                    </div>`;
+                return;
+            }
+
+            // Show loading state only if size check passes
             uploadStatus.innerHTML = `
                 <div class="share-form" style="background: var(--background-color); border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
                     <div style="display: flex; align-items: center; gap: 1rem;">
@@ -100,20 +114,9 @@
                 </div>`;
 
             try {
-                const content = this.elements.content.value;
                 const file = new File([content], 'text.txt', {
                     type: 'text/plain'
                 });
-
-                // Check if file size exceeds 3MB
-                const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB in bytes
-                if (file.size > MAX_FILE_SIZE) {
-                    uploadStatus.innerHTML = `
-                        <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
-                            <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">File size exceeds the 3MB limit.</p>
-                        </div>`;
-                    return; // Stop form submission if the file is too large
-                }
 
                 const formData = new FormData();
                 formData.append('file', file);
@@ -149,8 +152,6 @@
                     </div>`;
             }
         });
-
-
 
         // File access form handler
         document.getElementById("receiveForm").addEventListener("submit", async function(event) {
