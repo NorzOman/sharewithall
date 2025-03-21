@@ -13,7 +13,7 @@ import time
 import requests
 import re
 import io
-
+import base64
 
 '''Initialize environment variables'''
 SUPABASE_URL = os.getenv("SUPABASE_URL")
