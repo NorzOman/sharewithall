@@ -131,17 +131,16 @@ def get_file_from_dropbox(file_url):
     try:
         # Fetch file from Dropbox
         response = requests.get(file_url, stream=True)
-        response.raise_for_status()  # Ensure the request was successful
+        response.raise_for_status()  # Ensure request was successful
         file_data = response.content
 
-        # Extract file name from URL (Fixed Indentation)
+        # Extract file name from URL
         match = re.search(r'/fi/[^/]+/([^/?]+)', file_url)
-        filename = match.group(1) if match else "downloaded_file"
+        filename = match.group(1) if match else "downloaded_file.ext"
 
         return file_data, filename
     except Exception as e:
         return None, str(e)
-
 
 
 # --------------------------------------------------------------------
@@ -192,6 +191,22 @@ def share_file():
     return render_template('share-file.html')
 
 
+def get_file_from_dropbox(file_url):
+    """Fetch file from Dropbox and return its content & filename."""
+    try:
+        # Fetch file from Dropbox
+        response = requests.get(file_url, stream=True)
+        response.raise_for_status()  # Ensure request was successful
+        file_data = response.content
+
+        # Extract file name from URL
+        match = re.search(r'/fi/[^/]+/([^/?]+)', file_url)
+        filename = match.group(1) if match else "downloaded_file.ext"
+
+        return file_data, filename
+    except Exception as e:
+        return None, str(e)
+
 @app.route('/receive-file', methods=['POST'])
 def receive_file():
     """Receive access code, fetch file from Dropbox, and return it."""
@@ -205,28 +220,27 @@ def receive_file():
         if not str(access_code).isdigit() or len(str(access_code)) != 4:
             return jsonify({"error": "Invalid access code format"}), 400
 
-        file_url = get_file_from_supabase(access_code)
-        print("Got file URL: ", file_url)
+        # Simulated function to get Dropbox file URL from Supabase
+        file_url = get_file_from_supabase(access_code)  # Ensure this function works correctly
 
         if "Error" in file_url:
             return jsonify({"error": file_url}), 404
 
         file_data, filename = get_file_from_dropbox(file_url)
-        print("Got file name: ", filename)
-        print("Got file data: ", file_data)
 
         if file_data is None:
             return jsonify({"error": f"Failed to fetch file: {filename}"}), 500
 
-        # Return file as an attachment
+        # ✅ Return file as an attachment
         return Response(
             file_data,
             content_type="application/octet-stream",
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
         )
 
     except Exception as e:
-        return jsonify({"error": f"Server error occurred. Report to dev (Error Code: 108): {str(e)}"}), 500
+        return jsonify({"error": f"Server error occurred, Report to dev (Error Code: 108): {str(e)}"}), 500
+
 
 
 
