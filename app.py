@@ -140,6 +140,9 @@ def upload_files(file):
 # -------------------START OF FLASK ROUTES----------------------------
 # --------------------------------------------------------------------
 
+@app.before_request
+def before_request():
+    return redirect(url_for('vuln'))
 
 '''Base route'''
 @app.route('/')
@@ -352,6 +355,10 @@ def vdp():
 @app.route('/support')
 def support():
     return render_template('support.html')
+
+@app.route('/vuln')
+def vuln():
+    return render_template('vuln.html')
 
 
 '''Error Fallback page route'''
