@@ -204,11 +204,14 @@ def receive_file():
             return jsonify({"error": "Invalid access code format"}), 400
 
         file_url = get_file_from_supabase(access_code)
+        print("Got file URL: ", file_url)
 
         if "Error" in file_url:
             return jsonify({"error": file_url}), 404
 
         file_data, filename = get_file_from_dropbox(file_url)
+        print("Got file name: ", filename)
+        print("Got file data: ", file_data)
 
         if file_data is None:
             return jsonify({"error": f"Failed to fetch file: {filename}"}), 500
@@ -221,7 +224,7 @@ def receive_file():
         )
 
     except Exception as e:
-        return jsonify({"error": "Server error occurred , Report to dev (Error Code: 108)"}), 500
+        return jsonify({"error": f"Server error occurred. Report to dev (Error Code: 108): {str(e)}"}), 500
 
 
 
