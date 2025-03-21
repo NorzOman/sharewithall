@@ -125,24 +125,6 @@ def upload_files(file):
     return {"success": True, "code": access_code}
 
 
-
-def get_file_from_dropbox(file_url):
-    """Fetch file from Dropbox and return its content & filename."""
-    try:
-        # Fetch file from Dropbox
-        response = requests.get(file_url, stream=True)
-        response.raise_for_status()  # Ensure request was successful
-        file_data = response.content
-
-        # Extract file name from URL
-        match = re.search(r'/fi/[^/]+/([^/?]+)', file_url)
-        filename = match.group(1) if match else "downloaded_file.ext"
-
-        return file_data, filename
-    except Exception as e:
-        return None, str(e)
-
-
 # --------------------------------------------------------------------
 # -------------------END OF CRITICAL FUNCS----------------------------
 # --------------------------------------------------------------------
@@ -207,6 +189,22 @@ def get_file_from_dropbox(file_url):
     except Exception as e:
         return None, str(e)
 
+
+def get_file_from_dropbox(file_url):
+    """Fetch file from Dropbox and return its content & filename."""
+    try:
+        response = requests.get(file_url, stream=True)
+        response.raise_for_status()  # Ensure request was successful
+        file_data = response.content
+
+        # Extract file name from URL
+        match = re.search(r'/fi/[^/]+/([^/?]+)', file_url)
+        filename = match.group(1) if match else "downloaded_file.ext"
+
+        return file_data, filename
+    except Exception as e:
+        return None, str(e)
+
 @app.route('/receive-file', methods=['POST'])
 def receive_file():
     """Receive access code, fetch file from Dropbox, and return it."""
@@ -231,11 +229,12 @@ def receive_file():
         if file_data is None:
             return jsonify({"error": f"Failed to fetch file: {filename}"}), 500
 
-        # ✅ Return file as an attachment
-        return Response(
-            file_data,
-            content_type="application/octet-stream",
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        # ✅ Use `io.BytesIO` to serve file without saving
+        return send_file(
+            io.BytesIO(file_data),
+            mimetype="application/octet-stream",
+            as_attachment=True,
+            download_name=filename
         )
 
     except Exception as e:
