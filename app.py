@@ -31,6 +31,8 @@ app.secret_key = os.getenv("SECRET_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+BASE64_STORAGE = {}
+
 # --------------------------------------------------------------------
 # -------------------START OF CRITICAL FUNCS--------------------------
 # --------------------------------------------------------------------
@@ -174,25 +176,27 @@ def share_file():
     return render_template('share-file.html')
 
 
-
 def get_file_from_dropbox(file_url):
-    """Fetch file from Dropbox and return its content & filename."""
+    """Fetch file from Dropbox and return base64-encoded content & filename."""
     try:
         response = requests.get(file_url, stream=True)
-        response.raise_for_status()  # Ensure request was successful
+        response.raise_for_status()
+
         file_data = response.content
+        base64_data = base64.b64encode(file_data).decode('utf-8')
 
         # Extract file name from URL
-        match = re.search(r'/fi/[^/]+/([^/?]+)', file_url)
+        match = re.search(r'/[^/]+/([^/?]+)', file_url)
         filename = match.group(1) if match else "downloaded_file.ext"
 
-        return file_data, filename
+        return base64_data, filename
     except Exception as e:
         return None, str(e)
 
+
 @app.route('/receive-file', methods=['POST'])
 def receive_file():
-    """Receive access code, fetch file from Dropbox, and return it."""
+    """Receives access code, fetches file info, and returns download route."""
     try:
         data = request.get_json()
         access_code = data.get("code")
@@ -203,27 +207,37 @@ def receive_file():
         if not str(access_code).isdigit() or len(str(access_code)) != 4:
             return jsonify({"error": "Invalid access code format"}), 400
 
-        # Simulated function to get Dropbox file URL from Supabase
-        file_url = get_file_from_supabase(access_code)  # Ensure this function works correctly
+        # Get Dropbox file URL
+        file_url = get_file_from_supabase(access_code)
 
         if "Error" in file_url:
             return jsonify({"error": file_url}), 404
 
-        file_data, filename = get_file_from_dropbox(file_url)
+        # Fetch the file & encode it in base64
+        base64_data, filename = get_file_from_dropbox(file_url)
 
-        if file_data is None:
+        if base64_data is None:
             return jsonify({"error": f"Failed to fetch file: {filename}"}), 500
 
-        # ✅ Use `io.BytesIO` to serve file without saving
-        return send_file(
-            io.BytesIO(file_data),
-            mimetype="application/octet-stream",
-            as_attachment=True,
-            download_name=filename
-        )
+        # Generate a unique file route
+        file_key = f"file_{access_code}"
+        BASE64_STORAGE[file_key] = base64_data  # Store base64 data temporarily
+
+        return jsonify({
+            "filename": filename,
+            "file_route": f"/api/download/{file_key}"
+        })
 
     except Exception as e:
-        return jsonify({"error": f"Server error occurred, Report to dev (Error Code: 108): {str(e)}"}), 500
+        return jsonify({"error": f"Server error (Code 108): {str(e)}"}), 500
+
+@app.route('/api/download/<file_key>', methods=['GET'])
+def download_file(file_key):
+    """Returns the base64-encoded file content."""
+    if file_key not in BASE64_STORAGE:
+        return jsonify({"error": "File not found"}), 404
+
+    return jsonify({"file_base64": BASE64_STORAGE[file_key]})
 
 
 
