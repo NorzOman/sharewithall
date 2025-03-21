@@ -163,7 +163,7 @@
                         <div class="spinner-border" style="color: var(--secondary-color); width: 1.5rem; height: 1.5rem;" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
-                        <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">Searching for your file...</p>
+                        <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">Fetching your file...</p>
                     </div>
                 </div>`;
 
@@ -171,34 +171,49 @@
                 const response = await fetch("/receive-file", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json"
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({ code: fileId })
                 });
 
-                const data = await response.json();
-
-                if (data.error) {
-                    fileAccessResult.innerHTML = `
-                        <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
-                            <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">${data.error}</p>
-                        </div>`;
-                } else {
-                    window.location.href = data.file_url;
-                    fileAccessResult.innerHTML = `
-                        <div class="share-form" style="background: #F5F5F7; border: 1px solid var(--border-color);">
-                            <div style="text-align: center;">
-                                <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">Starting download...</p>
-                                <p style="color: var(--accent-color); margin-top: 0.5rem; font-size: 0.9rem;">If download doesn't start, <a href="${data.file_url}" style="color: var(--secondary-color);">click here</a></p>
-                            </div>
-                        </div>`;
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch file');
                 }
+
+                // Get the filename from the Content-Disposition header
+                const contentDisposition = response.headers.get('Content-Disposition');
+                const filename = contentDisposition
+                    ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+                    : 'downloaded_file';
+
+                // Create blob from response and trigger download
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                fileAccessResult.innerHTML = `
+                    <div class="share-form" style="background: #F5F5F7; border: 1px solid var(--border-color);">
+                        <div style="text-align: center;">
+                            <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">
+                                Your download has started! Check your downloads folder.
+                            </p>
+                        </div>
+                    </div>`;
+
             } catch (error) {
-                const errorResponse = await error.response?.json();
                 fileAccessResult.innerHTML = `
                     <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
-                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">${errorResponse?.error || error.message}</p>
+                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">
+                            ${error.message}
+                        </p>
                     </div>`;
             }
         });

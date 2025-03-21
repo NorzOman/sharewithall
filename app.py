@@ -174,22 +174,6 @@ def share_file():
     return render_template('share-file.html')
 
 
-def get_file_from_dropbox(file_url):
-    """Fetch file from Dropbox and return its content & filename."""
-    try:
-        # Fetch file from Dropbox
-        response = requests.get(file_url, stream=True)
-        response.raise_for_status()  # Ensure request was successful
-        file_data = response.content
-
-        # Extract file name from URL
-        match = re.search(r'/fi/[^/]+/([^/?]+)', file_url)
-        filename = match.group(1) if match else "downloaded_file.ext"
-
-        return file_data, filename
-    except Exception as e:
-        return None, str(e)
-
 
 def get_file_from_dropbox(file_url):
     """Fetch file from Dropbox and return its content & filename."""
