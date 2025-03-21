@@ -12,6 +12,7 @@ import string
 import time
 import requests
 import re
+import io
 
 
 '''Initialize environment variables'''
