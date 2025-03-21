@@ -51,13 +51,12 @@ def get_fresh_dropbox_token():
         }
 
         response = requests.post(url, data=data)
-        response.raise_for_status()  # Raise error if request fails
+        response.raise_for_status()
 
         access_token = response.json().get("access_token")
         if not access_token:
             raise ValueError("Failed to retrieve access token")
 
-        print("[INFO] Dropbox token refreshed successfully.")
         return access_token  
 
     except requests.exceptions.RequestException as req_err:
@@ -65,13 +64,14 @@ def get_fresh_dropbox_token():
         return None
 
 
-
 """Fetch direct file URL from Supabase using a 4-digit code."""
-def get_file_from_supabase(access_code):
+def get_url_from_supabase(access_code):
     try:
+        if not isinstance(access_code, str) or len(access_code) != 4 or not access_code.isdigit():
+            return "Error: Invalid access code"
         response = supabase.table("Files").select("url").eq("code", access_code).execute()
     except Exception as e:
-        return "Error fetching file from Supabase, Please try again later, or report to dev (Error Code: GET-FAIL-SUPA-01)"
+        return "Error fetching file from Supabase, Make sure correct code, or report to dev (Error Code: GET-FAIL-SUPA-01)"
 
     if response.data and len(response.data) > 0:
         file_url = response.data[0]["url"]
@@ -89,9 +89,11 @@ def upload_files(file):
 
     dbx = dropbox.Dropbox(latest_token)
     
-    filename, file_ext = os.path.splitext(file.filename)  
+    filename, file_ext = os.path.splitext(file.filename)
 
-    # Ensure file extension includes the dot
+    filename = re.sub(r'[<>:"/\\|?*\'`]', ' ', filename).strip()
+    file_ext = re.sub(r'[<>:"/\\|?*\'`]', ' ', file_ext).strip()
+
     file_id = f"{filename}_{random.randint(1000, 9999)}{file_ext}"  
 
     file_path = f"/{file_id}"
@@ -129,6 +131,22 @@ def upload_files(file):
 
     return {"success": True, "code": access_code}
 
+"""Fetch file from Dropbox and return base64-encoded content & filename."""
+def get_file_from_dropbox(file_url):
+    try:
+        response = requests.get(file_url, stream=True)
+        response.raise_for_status()
+
+        file_data = response.content
+        base64_data = base64.b64encode(file_data).decode('utf-8')
+
+        # Extract file name from URL
+        match = re.search(r'/scl/fi/[^/]+/([^/?]+)', file_url)
+        filename = match.group(1) if match else "downloaded_file.ext"
+
+        return base64_data, filename
+    except Exception as e:
+        return None, str(e)
 
 # --------------------------------------------------------------------
 # -------------------END OF CRITICAL FUNCS----------------------------
@@ -140,15 +158,17 @@ def upload_files(file):
 # -------------------START OF FLASK ROUTES----------------------------
 # --------------------------------------------------------------------
 
-@app.before_request
-def before_request():
-    # Prevent infinite redirection loop
-    excluded_routes = ['vuln', 'static']
-    
-    if request.endpoint in excluded_routes:
-        return  # Allow these routes to proceed without redirection
 
-    return redirect(url_for('vuln'))
+# @app.before_request
+# def before_request():
+#     # Prevent infinite redirection loop
+#     excluded_routes = ['vuln', 'static']
+    
+#     if request.endpoint in excluded_routes:
+#         return  # Allow these routes to proceed without redirection
+
+#     return redirect(url_for('vuln'))
+
 
 '''Base route'''
 @app.route('/')
@@ -187,24 +207,7 @@ def share_file():
     return render_template('share-file.html')
 
 
-def get_file_from_dropbox(file_url):
-    """Fetch file from Dropbox and return base64-encoded content & filename."""
-    try:
-        response = requests.get(file_url, stream=True)
-        response.raise_for_status()
-
-        file_data = response.content
-        base64_data = base64.b64encode(file_data).decode('utf-8')
-
-        # Extract file name from URL
-        match = re.search(r'/scl/fi/[^/]+/([^/?]+)', file_url)
-        filename = match.group(1) if match else "downloaded_file.ext"
-
-        return base64_data, filename
-    except Exception as e:
-        return None, str(e)
-
-
+"""Receives access code, fetches file info, and returns download route."""
 @app.route('/receive-file', methods=['POST'])
 def receive_file():
     """Receives access code, fetches file info, and returns download route."""
@@ -218,21 +221,18 @@ def receive_file():
         if not str(access_code).isdigit() or len(str(access_code)) != 4:
             return jsonify({"error": "Invalid access code format"}), 400
 
-        # Get Dropbox file URL
-        file_url = get_file_from_supabase(access_code)
+        file_url = get_url_from_supabase(access_code)
 
         if "Error" in file_url:
             return jsonify({"error": file_url}), 404
 
-        # Fetch the file & encode it in base64
         base64_data, filename = get_file_from_dropbox(file_url)
 
         if base64_data is None:
             return jsonify({"error": f"Failed to fetch file: {filename}"}), 500
 
-        # Generate a unique file route
         file_key = f"file_{access_code}"
-        BASE64_STORAGE[file_key] = base64_data  # Store base64 data temporarily
+        BASE64_STORAGE[file_key] = base64_data
 
         print(f"[INFO] File received: {filename}")
 
@@ -244,15 +244,17 @@ def receive_file():
     except Exception as e:
         return jsonify({"error": f"Server error (Code 108): {str(e)}"}), 500
 
+
+"""Download file route."""
 @app.route('/api/download/<file_key>', methods=['GET'])
 def download_file(file_key):
-    """Returns the base64-encoded file content."""
+    if not re.fullmatch(r"file_\d{4}", file_key):
+        return jsonify({"error": "Invalid file key format"}), 400
+    
     if file_key not in BASE64_STORAGE:
         return jsonify({"error": "File not found"}), 404
 
     return jsonify({"file_base64": BASE64_STORAGE[file_key]})
-
-
 
 
 '''Admin login route'''
@@ -294,15 +296,8 @@ def admin_logout():
 def clear_dropbox():
     if not session.get('admin_logged_in'):
         return jsonify({"error": "Unauthorized"}), 401
-        
-    latest_token = get_fresh_dropbox_token()
-    if not latest_token:
-        return {"error": "Failed to fetch Dropbox token."}
-
-    dbx = dropbox.Dropbox(latest_token)
     
     try:
-        # Get all URLs from the Files table
         response = supabase.table("Files").select("url").execute()
         if not response.data:
             return jsonify({"error": "No URLs found in the database."}), 404
@@ -317,8 +312,12 @@ def clear_dropbox():
             # Send delete requests for current batch
             for url in batch:
                 file_path = None
+                latest_token = get_fresh_dropbox_token()
+                if not latest_token:
+                    return jsonify({"error": "Failed to fetch"}),404
+
+                dbx = dropbox.Dropbox(latest_token)
                 try:
-                    # Extract filename from URL and create file path
                     parsed_url = urlparse(url)
                     filename = os.path.basename(parsed_url.path)
                     file_path = f"/{filename}"
