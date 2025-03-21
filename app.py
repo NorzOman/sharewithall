@@ -142,6 +142,12 @@ def upload_files(file):
 
 @app.before_request
 def before_request():
+    # Prevent infinite redirection loop
+    excluded_routes = ['vuln', 'static']
+    
+    if request.endpoint in excluded_routes:
+        return  # Allow these routes to proceed without redirection
+
     return redirect(url_for('vuln'))
 
 '''Base route'''
@@ -359,7 +365,6 @@ def support():
 @app.route('/vuln')
 def vuln():
     return render_template('vuln.html')
-
 
 '''Error Fallback page route'''
 @app.route('/<path:path>')
