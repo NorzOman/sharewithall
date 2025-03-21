@@ -89,8 +89,10 @@ def upload_files(file):
 
     dbx = dropbox.Dropbox(latest_token)
     
-    file_ext = file.filename.split(".")[-1]
-    file_id = f"{uuid.uuid4().hex}.{file_ext}"
+    filename, file_ext = os.path.splitext(file.filename)  
+
+    # Ensure file extension includes the dot
+    file_id = f"{filename}_{random.randint(1000, 9999)}{file_ext}"  
 
     file_path = f"/{file_id}"
     
