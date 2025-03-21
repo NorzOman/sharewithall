@@ -11,6 +11,7 @@ import random
 import string
 import time
 import requests
+import re
 
 
 '''Initialize environment variables'''
