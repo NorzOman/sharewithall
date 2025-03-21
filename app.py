@@ -1,7 +1,7 @@
 
 
 '''Necessary imports for the projects'''
-from flask import Flask, render_template, request, jsonify , redirect, url_for, session
+from flask import Flask, render_template, request, jsonify , redirect, url_for, session , Response
 from supabase import create_client
 from urllib.parse import urlparse
 import os
@@ -125,6 +125,7 @@ def upload_files(file):
     return {"success": True, "code": access_code}
 
 
+
 def get_file_from_dropbox(file_url):
     """Fetch file from Dropbox and return its content & filename."""
     try:
@@ -133,13 +134,14 @@ def get_file_from_dropbox(file_url):
         response.raise_for_status()  # Ensure the request was successful
         file_data = response.content
 
-        # Extract file name from URL
-        match = re.search(r'/fi/([^/]+)', file_url)
-        filename = match.group(1) if match else "downloaded_file.ext"
+        # Extract file name from URL (Fixed Indentation)
+        match = re.search(r'/fi/[^/]+/([^/?]+)', file_url)
+        filename = match.group(1) if match else "downloaded_file"
 
         return file_data, filename
     except Exception as e:
         return None, str(e)
+
 
 
 # --------------------------------------------------------------------
