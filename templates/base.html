@@ -158,54 +158,73 @@
         // File access form handler
         document.getElementById("receiveForm").addEventListener("submit", async function(event) {
             event.preventDefault();
-            
+
             const fileId = document.getElementById("fileId").value;
             const fileAccessResult = document.getElementById("fileAccessResult");
-            
+
             fileAccessResult.style.display = "block";
-            fileAccessResult.innerHTML = `
-                <div class="share-form" style="background: var(--background-color); border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div class="spinner-border" style="color: var(--secondary-color); width: 1.5rem; height: 1.5rem;" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">Searching for your file...</p>
-                    </div>
-                </div>`;
+            fileAccessResult.innerHTML = `<p>Fetching file information...</p>`;
 
             try {
+                // 🔥 Step 1: Get File Info (Filename + API Route)
                 const response = await fetch("/receive-file", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ code: fileId })
                 });
 
-                const data = await response.json();
-
-                if (data.error) {
-                    fileAccessResult.innerHTML = `
-                        <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
-                            <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">${data.error}</p>
-                        </div>`;
-                } else {
-                    window.location.href = data.file_url;
-                    fileAccessResult.innerHTML = `
-                        <div class="share-form" style="background: #F5F5F7; border: 1px solid var(--border-color);">
-                            <div style="text-align: center;">
-                                <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">Starting download...</p>
-                                <p style="color: var(--accent-color); margin-top: 0.5rem; font-size: 0.9rem;">If download doesn't start, <a href="${data.file_url}" style="color: var(--secondary-color);">click here</a></p>
-                            </div>
-                        </div>`;
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to fetch file info");
                 }
+
+                const fileInfo = await response.json();
+                const filename = fileInfo.filename;
+                const fileRoute = fileInfo.file_route; // Example: "/api/download/qewrwe"
+
+                if (!fileRoute) {
+                    throw new Error("Invalid file route received.");
+                }
+
+                fileAccessResult.innerHTML = `<p>Downloading your file...</p>`;
+
+                // 🔥 Step 2: Fetch Base64 File
+                const fileResponse = await fetch(fileRoute);
+                if (!fileResponse.ok) {
+                    throw new Error("Failed to fetch base64 file data.");
+                }
+
+                const fileData = await fileResponse.json();
+                const base64String = fileData.file_base64;
+
+                if (!base64String) {
+                    throw new Error("No file data received.");
+                }
+
+                // 🔥 Step 3: Decode Base64 and Convert to Blob
+                const byteCharacters = atob(base64String);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: "application/octet-stream" });
+
+                // 🔥 Step 4: Trigger Download
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.style.display = "none";
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                fileAccessResult.innerHTML = `<p>Your file has been downloaded successfully.</p>`;
+
             } catch (error) {
-                const errorResponse = await error.response?.json();
-                fileAccessResult.innerHTML = `
-                    <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
-                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">${errorResponse?.error || error.message}</p>
-                    </div>`;
+                fileAccessResult.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
             }
         });
     </script>

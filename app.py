@@ -223,6 +223,8 @@ def receive_file():
         file_key = f"file_{access_code}"
         BASE64_STORAGE[file_key] = base64_data  # Store base64 data temporarily
 
+        print(f"[INFO] File received: {filename}")
+
         return jsonify({
             "filename": filename,
             "file_route": f"/api/download/{file_key}"
