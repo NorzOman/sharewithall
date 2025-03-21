@@ -1,7 +1,7 @@
 
 
 '''Necessary imports for the projects'''
-from flask import Flask, render_template, request, jsonify , redirect, url_for, session , Response
+from flask import Flask, render_template, request, jsonify , redirect, url_for, session , Response , send_file
 from supabase import create_client
 from urllib.parse import urlparse
 import os
