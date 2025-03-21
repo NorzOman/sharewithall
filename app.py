@@ -123,6 +123,56 @@ def upload_files(file):
 
     return {"success": True, "code": access_code}
 
+
+def get_file_from_dropbox(file_url):
+    """Fetch file from Dropbox and return its content & filename."""
+    try:
+        # Fetch file from Dropbox
+        response = requests.get(file_url, stream=True)
+        response.raise_for_status()  # Ensure the request was successful
+        file_data = response.content
+
+        # Extract file name from URL
+        match = re.search(r'/fi/([^/]+)', file_url)
+        filename = match.group(1) if match else "downloaded_file.ext"
+
+        return file_data, filename
+    except Exception as e:
+        return None, str(e)
+
+@app.route('/receive-file', methods=['POST'])
+def receive_file():
+    """Receive access code, fetch file from Dropbox, and return it."""
+    try:
+        data = request.get_json()
+        access_code = data.get("code")
+
+        if not access_code:
+            return jsonify({"error": "No access code provided"}), 400
+
+        if not str(access_code).isdigit() or len(str(access_code)) != 4:
+            return jsonify({"error": "Invalid access code format"}), 400
+
+        file_url = get_file_from_supabase(access_code)
+
+        if "Error" in file_url:
+            return jsonify({"error": file_url}), 404
+
+        file_data, filename = get_file_from_dropbox(file_url)
+
+        if file_data is None:
+            return jsonify({"error": f"Failed to fetch file: {filename}"}), 500
+
+        # Return file as an attachment
+        return Response(
+            file_data,
+            content_type="application/octet-stream",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+
+    except Exception as e:
+        return jsonify({"error": "Server error occurred , Report to dev (Error Code: 108)"}), 500
+
 # --------------------------------------------------------------------
 # -------------------END OF CRITICAL FUNCS----------------------------
 # --------------------------------------------------------------------
@@ -188,6 +238,8 @@ def receive_file():
 
         if "Error" in file_url:
             return jsonify({"error": file_url}), 404
+
+        get_file_from_dropbox(file_url)
 
         return jsonify({
             "success": True,
