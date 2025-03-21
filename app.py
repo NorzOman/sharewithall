@@ -186,7 +186,7 @@ def get_file_from_dropbox(file_url):
         base64_data = base64.b64encode(file_data).decode('utf-8')
 
         # Extract file name from URL
-        match = re.search(r'/[^/]+/([^/?]+)', file_url)
+        match = re.search(r'/scl/fi/[^/]+/([^/?]+)', file_url)
         filename = match.group(1) if match else "downloaded_file.ext"
 
         return base64_data, filename
