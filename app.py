@@ -37,7 +37,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["20 per minute"],
+    default_limits=["2 per minute"],
 )
 
 
@@ -158,6 +158,15 @@ def get_file_from_dropbox(file_url):
     except Exception as e:
         return None, str(e)
 
+def verify_hcaptcha(token):
+    """Verify hCaptcha response with hCaptcha API."""
+    response = requests.post("https://api.hcaptcha.com/siteverify", data={
+        "secret": HCAPTCHA_SECRET_KEY,
+        "response": token
+    })
+    result = response.json()
+    return result.get("success", False)
+
 # --------------------------------------------------------------------
 # -------------------END OF CRITICAL FUNCS----------------------------
 # --------------------------------------------------------------------
@@ -194,35 +203,36 @@ def base():
 
 
 '''Share file route'''
-@app.route('/share-file', methods=['GET','POST']) 
+@app.route('/share-file', methods=['GET','POST'])
 def share_file():
-    if request.method == 'POST':
-        if "file" not in request.files:
-            return jsonify({"error": "No file uploaded"}), 400
-        
-        file = request.files["file"]
-        
-        if file.filename == "":
-            return jsonify({"error": "No selected file"}), 400
+    if "file" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+    
+    file = request.files["file"]
+    
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
 
-        # Check if the file size exceeds 3MB
-        MAX_FILE_SIZE = 3 * 1024 * 1024
-        if file.content_length > MAX_FILE_SIZE:
-            return jsonify({"error": "File size exceeds 3MB limit"}), 400
+    # ✅ Extract hCaptcha response
+    hcaptcha_token = request.form.get("h-captcha-response")
+    if not hcaptcha_token or not verify_hcaptcha(hcaptcha_token):
+        return jsonify({"error": "hCaptcha verification failed"}), 403
 
-        result = upload_files(file)
-        
-        if "error" in result:
-            return jsonify({"error": result["error"]}), 500
-            
-        return jsonify({
-            "success": True,
-            "message": "File uploaded successfully!", 
-            "File Code": result["code"]
-        })
+    # ✅ Check if file size exceeds 3MB
+    MAX_FILE_SIZE = 3 * 1024 * 1024
+    if file.content_length > MAX_FILE_SIZE:
+        return jsonify({"error": "File size exceeds 3MB limit"}), 400
 
-    return render_template('share-file.html')
+    result = upload_files(file)
 
+    if "error" in result:
+        return jsonify({"error": result["error"]}), 500
+
+    return jsonify({
+        "success": True,
+        "message": "File uploaded successfully!",
+        "File Code": result["code"]
+    })
 
 """Receives access code, fetches file info, and returns download route."""
 @app.route('/receive-file', methods=['POST'])
@@ -262,7 +272,6 @@ def receive_file():
         return jsonify({"error": f"Server error (Code 108): {str(e)}"}), 500
 
 
-"""Download file route."""
 @app.route('/api/download/<file_key>', methods=['GET'])
 def download_file(file_key):
     if not re.fullmatch(r"file_\d{4}", file_key):
@@ -271,7 +280,10 @@ def download_file(file_key):
     if file_key not in BASE64_STORAGE:
         return jsonify({"error": "File not found"}), 404
 
-    return jsonify({"file_base64": BASE64_STORAGE[file_key]})
+    file_data = BASE64_STORAGE.pop(file_key)
+
+    return jsonify({"file_base64": file_data})
+
 
 
 '''Admin login route'''

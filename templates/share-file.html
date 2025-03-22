@@ -11,6 +11,8 @@
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- hCaptcha Script -->
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">
@@ -48,6 +50,10 @@
                 <form id="fileShareForm" enctype="multipart/form-data" autocomplete="off">
                     <div class="mb-3">
                         <input type="file" class="form-control" id="fileInput" name="file" required>
+                    </div>
+                    <!-- Add hCaptcha Widget -->
+                    <div class="mb-3">
+                        <div class="h-captcha" data-sitekey="06f0b002-0eba-4fcc-a77c-d17e2c22bad0"></div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center gap-3">
                         <button type="submit" class="btn btn-share">Share File</button>
