@@ -221,7 +221,7 @@ def base():
 
 
 '''Share file route'''
-@app.route('/share-file', methods=['POST'])
+@app.route('/share-file', methods=['GET','POST'])
 def share_file():
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
