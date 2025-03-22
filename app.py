@@ -223,34 +223,35 @@ def base():
 '''Share file route'''
 @app.route('/share-file', methods=['GET','POST'])
 def share_file():
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
-    
-    file = request.files["file"]
-    
-    if file.filename == "":
-        return jsonify({"error": "No selected file"}), 400
+    if request.method == 'POST':
+        if "file" not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+        
+        file = request.files["file"]
+        
+        if file.filename == "":
+            return jsonify({"error": "No selected file"}), 400
 
-    hcaptcha_token = request.form.get("h-captcha-response")
-    hcaptcha_result = verify_hcaptcha(hcaptcha_token)
+        hcaptcha_token = request.form.get("h-captcha-response")
+        hcaptcha_result = verify_hcaptcha(hcaptcha_token)
 
-    if hcaptcha_result is False:
-        return redirect(url_for('rate_limit'))
+        if hcaptcha_result is False:
+            return redirect(url_for('rate_limit'))
 
-    MAX_FILE_SIZE = 3 * 1024 * 1024
-    if file.content_length > MAX_FILE_SIZE:
-        return jsonify({"error": "File size exceeds 3MB limit"}), 400
+        MAX_FILE_SIZE = 3 * 1024 * 1024
+        if file.content_length > MAX_FILE_SIZE:
+            return jsonify({"error": "File size exceeds 3MB limit"}), 400
 
-    result = upload_files(file)
+        result = upload_files(file)
 
-    if "error" in result:
-        return jsonify({"error": result["error"]}), 500
+        if "error" in result:
+            return jsonify({"error": result["error"]}), 500
 
-    return jsonify({
-        "success": True,
-        "message": "File uploaded successfully!",
-        "File Code": result["code"]
-    })
+        return jsonify({
+            "success": True,
+            "message": "File uploaded successfully!",
+            "File Code": result["code"]
+        })
 
     return render_template('share_file.html')
 
