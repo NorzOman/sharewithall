@@ -253,7 +253,7 @@ def share_file():
             "File Code": result["code"]
         })
 
-    return render_template('share_file.html')
+    return render_template('share-file.html')
 
 """Receives access code, fetches file info, and returns download route."""
 @app.route('/receive-file', methods=['POST'])
