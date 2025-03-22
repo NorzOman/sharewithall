@@ -38,7 +38,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["2 per minute"],
+    default_limits=["20 per minute"],
 )
 
 
@@ -206,7 +206,7 @@ def block_bad_agents():
         if any(agent in user_agent for agent in blocked_agents):
             return redirect(url_for('rate_limit'))  # Redirect to rate limit page
 
-    if request.endpoint in ["share_file", "receive_file"]:
+    if request.method == 'POST' and request.endpoint in ["share_file", "receive_file"]:
             limiter.check()
 
 @app.errorhandler(429)
@@ -223,7 +223,7 @@ def base():
 '''Share file route'''
 @app.route('/share-file', methods=['GET','POST'])
 def share_file():
-    if request.method == 'POST':
+    
         if "file" not in request.files:
             return jsonify({"error": "No file uploaded"}), 400
         
