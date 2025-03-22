@@ -4,6 +4,8 @@
 from flask import Flask, render_template, request, jsonify , redirect, url_for, session , Response , send_file
 from supabase import create_client
 from urllib.parse import urlparse
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import os
 import uuid
 import dropbox
@@ -29,6 +31,14 @@ REFRESH_TOKEN = os.getenv("DROPBOX_REFRESH_TOKEN")
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+
+'''Initialize rate limiter'''
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["20 per minute"],
+)
 
 
 BASE64_STORAGE = {}
@@ -159,15 +169,22 @@ def get_file_from_dropbox(file_url):
 # --------------------------------------------------------------------
 
 
-# @app.before_request
-# def before_request():
-#     # Prevent infinite redirection loop
-#     excluded_routes = ['vuln', 'static']
-    
-#     if request.endpoint in excluded_routes:
-#         return  # Allow these routes to proceed without redirection
+def block_bad_agents():
+    """Block requests from bad user-agents and redirect to rate_limit page"""
+    if "rate_limit" not in request.path:  # Prevent infinite redirect loop
+        blocked_agents = [
+            "curl", "python-requests", "wget", "httpie", "go-http-client",
+            "postmanruntime", "sqlmap", "burp", "nmap", "hydra", "fuzz", "dirbuster",
+            "zap", "nikto", "arachni", "masscan"
+        ]
 
-#     return redirect(url_for('vuln'))
+        user_agent = request.headers.get("User-Agent", "").lower()
+
+        if any(agent in user_agent for agent in blocked_agents):
+            return redirect(url_for('rate_limit'))  # Redirect to rate limit page
+
+    if request.endpoint in ["share_file", "receive_file"]:
+            limiter.check()
 
 
 '''Base route'''
@@ -361,9 +378,11 @@ def vdp():
 def support():
     return render_template('support.html')
 
-@app.route('/vuln')
-def vuln():
-    return render_template('vuln.html')
+
+@app.route('/rate-limit')
+def rate_limit():
+    return render_template('rate_limit.html')
+
 
 '''Error Fallback page route'''
 @app.route('/<path:path>')

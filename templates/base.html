@@ -84,13 +84,32 @@
     </footer>
 
     <script>
+        // Replace the existing text share form handler with:
         document.getElementById("textShareForm").addEventListener("submit", async function(event) {
             event.preventDefault();
             const uploadStatus = document.getElementById("uploadStatus");
-            uploadStatus.style.display = "block";
+            const submitButton = this.querySelector('button[type="submit"]');
+            const content = this.elements.content.value.trim(); // Remove trailing spaces
 
+            // Check word count
+            const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
+            if (wordCount > 1000) {
+                uploadStatus.style.display = "block";
+                uploadStatus.innerHTML = `
+                    <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
+                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">Content exceeds 1000 words limit (current: ${wordCount} words)</p>
+                    </div>`;
+                return;
+            }
+
+            // Disable submit button for 10 seconds
+            submitButton.disabled = true;
+            setTimeout(() => {
+                submitButton.disabled = false;
+            }, 10000);
+
+            uploadStatus.style.display = "block";
             // Check content size before showing loading state
-            const content = this.elements.content.value;
             const contentSize = new Blob([content]).size;
             const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB in bytes
 
@@ -145,6 +164,7 @@
                         </div>`;
                 }
             } catch (error) {
+                submitButton.disabled = false; // Re-enable on error
                 const errorResponse = await error.response?.json();
                 uploadStatus.innerHTML = `
                     <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
@@ -153,15 +173,41 @@
             }
         });
 
-        // File access form handler
+        // Replace the existing receive form handler with:
         document.getElementById("receiveForm").addEventListener("submit", async function(event) {
             event.preventDefault();
 
             const fileId = document.getElementById("fileId").value;
             const fileAccessResult = document.getElementById("fileAccessResult");
+            const submitButton = this.querySelector('button[type="submit"]');
+
+            // Disable submit button and show countdown
+            submitButton.disabled = true;
+            let timeLeft = 10;
 
             fileAccessResult.style.display = "block";
-            fileAccessResult.innerHTML = `<p>Fetching file information...</p>`;
+            fileAccessResult.innerHTML = `
+                <div class="share-form" style="background: var(--background-color); border: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="spinner-border" style="color: var(--secondary-color); width: 1.5rem; height: 1.5rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">
+                            Fetching file... (${timeLeft}s cooldown)
+                        </p>
+                    </div>
+                </div>`;
+
+            // Update countdown every second
+            const countdownInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    const statusText = fileAccessResult.querySelector('p');
+                    if (statusText) {
+                        statusText.textContent = `Fetching file... (${timeLeft}s cooldown)`;
+                    }
+                }
+            }, 1000);
 
             try {
                 const response = await fetch("/receive-file", {
@@ -217,8 +263,24 @@
 
                 fileAccessResult.innerHTML = `<p>Your file has been downloaded successfully.</p>`;
 
+                clearInterval(countdownInterval);
+                // Re-enable button after 10 seconds
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                }, 10000);
+
             } catch (error) {
-                fileAccessResult.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                clearInterval(countdownInterval);
+                // Re-enable button after 10 seconds even on error
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                }, 10000);
+                fileAccessResult.innerHTML = `
+                    <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
+                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">
+                            Error: ${error.message}
+                        </p>
+                    </div>`;
             }
         });
     </script>

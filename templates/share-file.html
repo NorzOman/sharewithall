@@ -89,6 +89,13 @@
             event.preventDefault();
 
             const uploadStatus = document.getElementById("uploadStatus");
+            const fileInput = document.getElementById("fileInput");
+            const submitButton = this.querySelector('button[type="submit"]');
+
+            // Disable submit button and start countdown
+            submitButton.disabled = true;
+            let timeLeft = 10;
+
             uploadStatus.style.display = "block";
             uploadStatus.innerHTML = `
                 <div class="share-form" style="background: var(--background-color); border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
@@ -96,21 +103,38 @@
                         <div class="spinner-border" style="color: var(--secondary-color); width: 1.5rem; height: 1.5rem;" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
-                        <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">Uploading your file...</p>
+                        <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">
+                            Uploading your file... (${timeLeft}s cooldown)
+                        </p>
                     </div>
                 </div>`;
 
-            const fileInput = document.getElementById("fileInput"); // Assume your file input field has this ID.
+            // Update countdown every second
+            const countdownInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    const statusText = uploadStatus.querySelector('p');
+                    if (statusText) {
+                        statusText.textContent = `Uploading your file... (${timeLeft}s cooldown)`;
+                    }
+                }
+            }, 1000);
+
             const file = fileInput.files[0];
 
             // Check if a file is selected and if it exceeds 3MB
             const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB in bytes
             if (file && file.size > MAX_FILE_SIZE) {
+                clearInterval(countdownInterval);
                 uploadStatus.innerHTML = `
                     <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
                         <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">File size exceeds the 3MB limit.</p>
                     </div>`;
-                return; // Stop the form submission if the file is too large
+                // Re-enable button after 10 seconds even on error
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                }, 10000);
+                return;
             }
 
             try {
@@ -121,6 +145,7 @@
                 });
 
                 const data = await response.json();
+                clearInterval(countdownInterval);
 
                 if (data.error) {
                     uploadStatus.innerHTML = `
@@ -137,31 +162,67 @@
                                 </div>
                             </div>
                         </div>`;
+                    // Clear the file input after successful upload
+                    fileInput.value = '';
                 }
+
+                // Re-enable button after 10 seconds
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                }, 10000);
+
             } catch (error) {
+                clearInterval(countdownInterval);
                 const errorResponse = await error.response?.json();
                 uploadStatus.innerHTML = `
                     <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
                         <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">${errorResponse?.error || error.message}</p>
                     </div>`;
+                // Re-enable button after 10 seconds even on error
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                }, 10000);
             }
         });
 
         // File access form handler
-            document.getElementById("receiveForm").addEventListener("submit", async function(event) {
+        document.getElementById("receiveForm").addEventListener("submit", async function(event) {
             event.preventDefault();
 
-            const fileId = document.getElementById("fileId").value;
+            const submitButton = this.querySelector('button[type="submit"]');
+            const fileId = document.getElementById("fileId");
             const fileAccessResult = document.getElementById("fileAccessResult");
 
+            // Disable the submit button and start countdown
+            submitButton.disabled = true;
+            let timeLeft = 10;
+            
             fileAccessResult.style.display = "block";
-            fileAccessResult.innerHTML = `<p>Fetching file information...</p>`;
+            fileAccessResult.innerHTML = `
+                <div class="share-form" style="background: var(--background-color); border: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="spinner-border" style="color: var(--secondary-color); width: 1.5rem; height: 1.5rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">
+                            Fetching file information... (${timeLeft}s cooldown)
+                        </p>
+                    </div>
+                </div>`;
+
+            // Update countdown every second
+            const countdownInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    fileAccessResult.querySelector('p').textContent = `Fetching file information... (${timeLeft}s cooldown)`;
+                }
+            }, 1000);
 
             try {
                 const response = await fetch("/receive-file", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ code: fileId })
+                    body: JSON.stringify({ code: fileId.value })
                 });
 
                 if (!response.ok) {
@@ -211,8 +272,29 @@
 
                 fileAccessResult.innerHTML = `<p>Your file has been downloaded successfully.</p>`;
 
+                // Clear the countdown when done
+                clearInterval(countdownInterval);
+                
+                // Re-enable the submit button after 10 seconds
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                }, 10000);
+
             } catch (error) {
-                fileAccessResult.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                // Clear the countdown on error
+                clearInterval(countdownInterval);
+                
+                // Re-enable the submit button after 10 seconds
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                }, 10000);
+
+                fileAccessResult.innerHTML = `
+                    <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
+                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">
+                            Error: ${error.message}
+                        </p>
+                    </div>`;
             }
         });
 
