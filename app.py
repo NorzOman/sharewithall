@@ -38,7 +38,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["20 per minute"],
+    default_limits=["2 per minute"],
 )
 
 
@@ -226,6 +226,9 @@ def share_file():
     if request.method == "POST":
         if "file" not in request.files:
             return jsonify({"error": "No file uploaded"}), 400
+        
+        if "h-captcha-response" not in request.form:
+            return redirect(url_for('rate_limit'))
         
         file = request.files["file"]
         
