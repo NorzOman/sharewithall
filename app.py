@@ -25,6 +25,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 APP_KEY = os.getenv("APP_KEY")
 APP_SECRET = os.getenv("APP_SECRET")
 REFRESH_TOKEN = os.getenv("DROPBOX_REFRESH_TOKEN")
+HCAPTCHA_SECRET_KEY = os.getenv("HCAPTCHA_SECRET_KEY")
 
 
 '''Initialize Flask app and databases'''
@@ -159,13 +160,26 @@ def get_file_from_dropbox(file_url):
         return None, str(e)
 
 def verify_hcaptcha(token):
-    """Verify hCaptcha response with hCaptcha API."""
-    response = requests.post("https://api.hcaptcha.com/siteverify", data={
-        "secret": HCAPTCHA_SECRET_KEY,
-        "response": token
-    })
-    result = response.json()
-    return result.get("success", False)
+    """Verify hCaptcha response with the hCaptcha API."""
+    try:
+        response = requests.post("https://api.hcaptcha.com/siteverify", data={
+            "secret": HCAPTCHA_SECRET_KEY,
+            "response": token
+        })
+        result = response.json()
+
+        if result.get("success"):
+            return True
+        error_codes = result.get("error-codes", [])
+        if "missing-input-response" in error_codes or "invalid-input-response" in error_codes:
+            return False 
+
+        print(f"[WARNING] hCaptcha API issue: {error_codes}. Allowing upload.")
+        return True
+
+    except Exception as e:
+        print(f"[ERROR] hCaptcha verification request failed: {str(e)}. Allowing upload.")
+        return True
 
 # --------------------------------------------------------------------
 # -------------------END OF CRITICAL FUNCS----------------------------
@@ -177,7 +191,7 @@ def verify_hcaptcha(token):
 # -------------------START OF FLASK ROUTES----------------------------
 # --------------------------------------------------------------------
 
-
+@app.before_request
 def block_bad_agents():
     """Block requests from bad user-agents and redirect to rate_limit page"""
     if "rate_limit" not in request.path:  # Prevent infinite redirect loop
@@ -195,6 +209,10 @@ def block_bad_agents():
     if request.endpoint in ["share_file", "receive_file"]:
             limiter.check()
 
+@app.errorhandler(429)
+def rate_limit_exceeded(e):
+    return redirect(url_for('rate_limit'))  # Redirect to custom page
+
 
 '''Base route'''
 @app.route('/')
@@ -203,7 +221,7 @@ def base():
 
 
 '''Share file route'''
-@app.route('/share-file', methods=['GET','POST'])
+@app.route('/share-file', methods=['POST'])
 def share_file():
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
@@ -213,12 +231,12 @@ def share_file():
     if file.filename == "":
         return jsonify({"error": "No selected file"}), 400
 
-    # ✅ Extract hCaptcha response
     hcaptcha_token = request.form.get("h-captcha-response")
-    if not hcaptcha_token or not verify_hcaptcha(hcaptcha_token):
-        return jsonify({"error": "hCaptcha verification failed"}), 403
+    hcaptcha_result = verify_hcaptcha(hcaptcha_token)
 
-    # ✅ Check if file size exceeds 3MB
+    if hcaptcha_result is False:
+        return redirect(url_for('rate_limit'))
+
     MAX_FILE_SIZE = 3 * 1024 * 1024
     if file.content_length > MAX_FILE_SIZE:
         return jsonify({"error": "File size exceeds 3MB limit"}), 400
