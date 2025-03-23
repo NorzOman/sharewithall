@@ -97,6 +97,31 @@
             const uploadStatus = document.getElementById("uploadStatus");
             const fileInput = document.getElementById("fileInput");
             const submitButton = this.querySelector('button[type="submit"]');
+            
+            // Check if captcha is filled
+            const captchaResponse = hcaptcha.getResponse();
+            if (!captchaResponse) {
+                uploadStatus.style.display = "block";
+                uploadStatus.innerHTML = `
+                    <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
+                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">
+                            Please complete the captcha verification.
+                        </p>
+                    </div>`;
+                return;
+            }
+
+            // Check if file is selected
+            if (!fileInput.files[0]) {
+                uploadStatus.style.display = "block";
+                uploadStatus.innerHTML = `
+                    <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
+                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">
+                            Please select a file to upload.
+                        </p>
+                    </div>`;
+                return;
+            }
 
             // Disable submit button and start countdown
             submitButton.disabled = true;
@@ -128,18 +153,18 @@
 
             const file = fileInput.files[0];
 
-            // Check if a file is selected and if it exceeds 3MB
+            // Check file size
             const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB in bytes
-            if (file && file.size > MAX_FILE_SIZE) {
+            if (file.size > MAX_FILE_SIZE) {
                 clearInterval(countdownInterval);
                 uploadStatus.innerHTML = `
                     <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
-                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">File size exceeds the 3MB limit.</p>
+                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">
+                            File size exceeds the 3MB limit.
+                        </p>
                     </div>`;
-                // Re-enable button after 10 seconds even on error
-                setTimeout(() => {
-                    submitButton.disabled = false;
-                }, 10000);
+                submitButton.disabled = false;
+                hcaptcha.reset();
                 return;
             }
 
@@ -156,37 +181,39 @@
                 if (data.error) {
                     uploadStatus.innerHTML = `
                         <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
-                            <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">${data.error}</p>
+                            <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">
+                                ${data.error}
+                            </p>
                         </div>`;
                 } else {
                     uploadStatus.innerHTML = `
                         <div class="share-form" style="background: #F5F5F7; border: 1px solid var(--border-color);">
                             <div style="text-align: center;">
-                                <p style="color: var(--text-color); margin-bottom: 1rem; font-weight: 600; font-size: 1rem;">File uploaded successfully!</p>
+                                <p style="color: var(--text-color); margin-bottom: 1rem; font-weight: 600; font-size: 1rem;">
+                                    File uploaded successfully!
+                                </p>
                                 <div style="background: var(--background-color); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: inline-block;">
-                                    <span style="font-size: 1.2rem; color: var(--text-color);">Access Code: <strong style="color: var(--secondary-color);">${data['File Code']}</strong></span>
+                                    <span style="font-size: 1.2rem; color: var(--text-color);">
+                                        Access Code: <strong style="color: var(--secondary-color);">${data['File Code']}</strong>
+                                    </span>
                                 </div>
                             </div>
                         </div>`;
-                    // Clear the file input after successful upload
                     fileInput.value = '';
                 }
-
-                // Re-enable button after 10 seconds
-                setTimeout(() => {
-                    submitButton.disabled = false;
-                }, 10000);
-
             } catch (error) {
                 clearInterval(countdownInterval);
-                const errorResponse = await error.response?.json();
                 uploadStatus.innerHTML = `
                     <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
-                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">${errorResponse?.error || error.message}</p>
+                        <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">
+                            ${error.message || 'An error occurred during upload.'}
+                        </p>
                     </div>`;
-                // Re-enable button after 10 seconds even on error
+            } finally {
+                // Reset captcha and re-enable button after 10 seconds
                 setTimeout(() => {
                     submitButton.disabled = false;
+                    hcaptcha.reset();
                 }, 10000);
             }
         });
