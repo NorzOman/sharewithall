@@ -228,7 +228,7 @@ def share_file():
             return jsonify({"error": "No file uploaded"}), 400
         
         if "h-captcha-response" not in request.form:
-            return redirect(url_for('rate_limit'))
+            return jsonify({"error": "Captcha verification failed"}), 400
         
         file = request.files["file"]
         
@@ -239,7 +239,7 @@ def share_file():
         hcaptcha_result = verify_hcaptcha(hcaptcha_token)
 
         if hcaptcha_result is False:
-            return redirect(url_for('rate_limit'))
+            return jsonify({"error": "Captcha verification failed"}), 400
 
         MAX_FILE_SIZE = 3 * 1024 * 1024
         if file.content_length > MAX_FILE_SIZE:
