@@ -12,7 +12,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <!-- hCaptcha Script -->
-    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+    <!-- <script src="https://js.hcaptcha.com/1/api.js" async defer></script> -->
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">
@@ -52,9 +52,9 @@
                         <textarea class="form-control" name="content" rows="3" placeholder="Type or paste content to share..." required></textarea>
                     </div>
                     <!-- Add hCaptcha Widget -->
-                    <div class="mb-3">
+                    <!-- <div class="mb-3">
                         <div class="h-captcha" data-sitekey="06f0b002-0eba-4fcc-a77c-d17e2c22bad0"></div>
-                    </div>
+                    </div> -->
                     <div class="d-flex justify-content-between align-items-center gap-3">
                         <button type="submit" class="btn btn-share">Share Content</button>
                         <a href="/share-file" class="btn btn-switch">Switch to File Upload</a>
@@ -98,7 +98,7 @@
             const content = this.elements.content.value.trim();
 
             // Check captcha first
-            const captchaResponse = hcaptcha.getResponse();
+            /* const captchaResponse = hcaptcha.getResponse();
             if (!captchaResponse) {
                 uploadStatus.style.display = "block";
                 uploadStatus.innerHTML = `
@@ -108,7 +108,7 @@
                         </p>
                     </div>`;
                 return;
-            }
+            } */
 
             // Check if content is empty
             if (!content) {
@@ -132,7 +132,7 @@
                             Content exceeds 1000 words limit (current: ${wordCount} words)
                         </p>
                     </div>`;
-                hcaptcha.reset();
+                // hcaptcha.reset();
                 return;
             }
 
@@ -171,7 +171,7 @@
 
                 const formData = new FormData();
                 formData.append('file', file);
-                formData.append('h-captcha-response', captchaResponse);
+                // formData.append('h-captcha-response', captchaResponse);
 
                 const response = await fetch("/share-file", {
                     method: "POST",
@@ -216,7 +216,7 @@
                 // Reset captcha and re-enable button after 10 seconds
                 setTimeout(() => {
                     submitButton.disabled = false;
-                    hcaptcha.reset();
+                    // hcaptcha.reset();
                 }, 10000);
             }
         });

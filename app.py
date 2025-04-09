@@ -1,11 +1,7 @@
-
-
 '''Necessary imports for the projects'''
 from flask import Flask, render_template, request, jsonify , redirect, url_for, session , Response , send_file
 from supabase import create_client
 from urllib.parse import urlparse
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 import os
 import uuid
 import dropbox
@@ -25,22 +21,11 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 APP_KEY = os.getenv("APP_KEY")
 APP_SECRET = os.getenv("APP_SECRET")
 REFRESH_TOKEN = os.getenv("DROPBOX_REFRESH_TOKEN")
-HCAPTCHA_SECRET_KEY = os.getenv("HCAPTCHA_SECRET_KEY")
-
 
 '''Initialize Flask app and databases'''
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-
-'''Initialize rate limiter'''
-limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["20 per minute"],
-)
-
 
 BASE64_STORAGE = {}
 
@@ -159,28 +144,6 @@ def get_file_from_dropbox(file_url):
     except Exception as e:
         return None, str(e)
 
-def verify_hcaptcha(token):
-    """Verify hCaptcha response with the hCaptcha API."""
-    try:
-        response = requests.post("https://api.hcaptcha.com/siteverify", data={
-            "secret": HCAPTCHA_SECRET_KEY,
-            "response": token
-        })
-        result = response.json()
-
-        if result.get("success"):
-            return True
-        error_codes = result.get("error-codes", [])
-        if "missing-input-response" in error_codes or "invalid-input-response" in error_codes:
-            return False 
-
-        print(f"[WARNING] hCaptcha API issue: {error_codes}. Allowing upload.")
-        return True
-
-    except Exception as e:
-        print(f"[ERROR] hCaptcha verification request failed: {str(e)}. Allowing upload.")
-        return True
-
 # --------------------------------------------------------------------
 # -------------------END OF CRITICAL FUNCS----------------------------
 # --------------------------------------------------------------------
@@ -190,29 +153,6 @@ def verify_hcaptcha(token):
 # --------------------------------------------------------------------
 # -------------------START OF FLASK ROUTES----------------------------
 # --------------------------------------------------------------------
-
-@app.before_request
-def block_bad_agents():
-    """Block requests from bad user-agents and redirect to rate_limit page"""
-    if "rate_limit" not in request.path:  # Prevent infinite redirect loop
-        blocked_agents = [
-            "curl", "python-requests", "wget", "httpie", "go-http-client",
-            "postmanruntime", "sqlmap", "burp", "nmap", "hydra", "fuzz", "dirbuster",
-            "zap", "nikto", "arachni", "masscan"
-        ]
-
-        user_agent = request.headers.get("User-Agent", "").lower()
-
-        if any(agent in user_agent for agent in blocked_agents):
-            return redirect(url_for('rate_limit'))  # Redirect to rate limit page
-
-    if request.method == 'POST' and request.endpoint in ["share_file", "receive_file"]:
-            limiter.check()
-
-@app.errorhandler(429)
-def rate_limit_exceeded(e):
-    return redirect(url_for('rate_limit'))  # Redirect to custom page
-
 
 '''Base route'''
 @app.route('/')
@@ -227,19 +167,10 @@ def share_file():
         if "file" not in request.files:
             return jsonify({"error": "No file uploaded"}), 400
         
-        if "h-captcha-response" not in request.form:
-            return jsonify({"error": "Captcha verification failed"}), 400
-        
         file = request.files["file"]
         
         if file.filename == "":
             return jsonify({"error": "No selected file"}), 400
-
-        hcaptcha_token = request.form.get("h-captcha-response")
-        hcaptcha_result = verify_hcaptcha(hcaptcha_token)
-
-        if hcaptcha_result is False:
-            return jsonify({"error": "Captcha verification failed"}), 400
 
         MAX_FILE_SIZE = 3 * 1024 * 1024
         if file.content_length > MAX_FILE_SIZE:
@@ -413,11 +344,6 @@ def vdp():
 @app.route('/support')
 def support():
     return render_template('support.html')
-
-
-@app.route('/rate-limit')
-def rate_limit():
-    return render_template('rate_limit.html')
 
 
 '''Error Fallback page route'''
