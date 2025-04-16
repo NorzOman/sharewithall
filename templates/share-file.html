@@ -142,19 +142,6 @@
             submitButton.disabled = true;
             let timeLeft = 10;
 
-            uploadStatus.style.display = "block";
-            uploadStatus.innerHTML = `
-                <div class="share-form" style="background: var(--background-color); border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div class="spinner-border" style="color: var(--secondary-color); width: 1.5rem; height: 1.5rem;" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">
-                            Uploading your file...
-                        </p>
-                    </div>
-                </div>`;
-
             const file = fileInput.files[0];
 
             // Check file size
@@ -174,8 +161,8 @@
 
             // Show beta warning for large files
             if (file.size > MAX_REGULAR_SIZE) {
-                uploadStatus.innerHTML = `
-                    <div class="share-form" style="background: #FFF7E6; border: 1px solid #FFB800;">
+                const betaWarning = `
+                    <div class="share-form" style="background: #FFF7E6; border: 1px solid #FFB800; margin-bottom: 1rem;">
                         <div style="text-align: left;">
                             <p style="color: #995500; margin: 0 0 8px 0; font-weight: 500; font-size: 0.95rem;">
                                 ⚠️ Beta Phase: Large File Upload
@@ -187,8 +174,34 @@
                         </div>
                     </div>`;
                 
+                // Show both beta warning and loading status
+                uploadStatus.innerHTML = betaWarning + `
+                    <div class="share-form" style="background: var(--background-color); border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="spinner-border" style="color: var(--secondary-color); width: 1.5rem; height: 1.5rem;" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">
+                                Uploading your file...
+                            </p>
+                        </div>
+                    </div>`;
+                
                 // Wait 2 seconds before starting upload
                 await new Promise(resolve => setTimeout(resolve, 2000));
+            } else {
+                // Show only loading status for regular sized files
+                uploadStatus.innerHTML = `
+                    <div class="share-form" style="background: var(--background-color); border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="spinner-border" style="color: var(--secondary-color); width: 1.5rem; height: 1.5rem;" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">
+                                Uploading your file...
+                            </p>
+                        </div>
+                    </div>`;
             }
 
             try {
