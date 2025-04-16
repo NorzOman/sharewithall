@@ -150,18 +150,30 @@
                             <span class="visually-hidden">Loading...</span>
                         </div>
                         <p style="color: var(--text-color); margin: 0; font-weight: 500; font-size: 0.95rem;">
-                            Uploading your file...
+                            Uploading your file... (${timeLeft}s cooldown)
                         </p>
                     </div>
                 </div>`;
+
+            // Update countdown every second
+            const countdownInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    const statusText = uploadStatus.querySelector('p');
+                    if (statusText) {
+                        statusText.textContent = `Uploading your file... (${timeLeft}s cooldown)`;
+                    }
+                }
+            }, 1000);
 
             const file = fileInput.files[0];
 
             // Check file size
             const MAX_REGULAR_SIZE = 2.5 * 1024 * 1024; // 2.5MB
-            const MAX_FILE_SIZE = 6 * 1024 * 1024;      // MB
+            const MAX_FILE_SIZE = 5 * 1024 * 1024;      // 5MB
 
             if (file.size > MAX_FILE_SIZE) {
+                clearInterval(countdownInterval);
                 uploadStatus.innerHTML = `
                     <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
                         <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">
@@ -199,6 +211,7 @@
                 });
 
                 const data = await response.json();
+                clearInterval(countdownInterval);
 
                 if (data.error) {
                     uploadStatus.innerHTML = `
@@ -224,6 +237,7 @@
                     fileInput.value = '';
                 }
             } catch (error) {
+                clearInterval(countdownInterval);
                 uploadStatus.innerHTML = `
                     <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
                         <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">
