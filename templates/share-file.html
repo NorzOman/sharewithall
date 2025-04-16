@@ -154,13 +154,13 @@
             const file = fileInput.files[0];
 
             // Check file size
-            const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB in bytes
+            const MAX_FILE_SIZE = 6 * 1024 * 1024; // 3MB in bytes
             if (file.size > MAX_FILE_SIZE) {
                 clearInterval(countdownInterval);
                 uploadStatus.innerHTML = `
                     <div class="share-form" style="background: #FFF2F2; border: 1px solid #FF4444;">
                         <p style="color: #FF4444; margin: 0; font-weight: 500; font-size: 0.95rem;">
-                            File size exceeds the 3MB limit.
+                            File size exceeds the 5MB limit.
                         </p>
                     </div>`;
                 submitButton.disabled = false;

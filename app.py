@@ -232,13 +232,18 @@ def download_file(file_key):
     if not re.fullmatch(r"file_\d{4}", file_key):
         return jsonify({"error": "Invalid file key format"}), 400
     
-    if file_key not in BASE64_STORAGE:
-        return jsonify({"error": "File not found"}), 404
+    try:
+        # Use pop() with a timeout to ensure cleanup even if download fails
+        file_data = BASE64_STORAGE.pop(file_key, None)
+        if file_data is None:
+            return jsonify({"error": "File not found or already downloaded"}), 404
 
-    file_data = BASE64_STORAGE.pop(file_key)
-
-    return jsonify({"file_base64": file_data})
-
+        return jsonify({"file_base64": file_data})
+    except Exception as e:
+        # If anything goes wrong, ensure we clean up
+        if file_key in BASE64_STORAGE:
+            BASE64_STORAGE.pop(file_key)
+        return jsonify({"error": "Download failed"}), 500
 
 
 '''Admin login route'''
