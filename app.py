@@ -350,6 +350,10 @@ def vdp():
 def support():
     return render_template('support.html')
 
+@app.route('/fixes')
+def privacy_policy():
+    return redirect("https://online-clipboard.online/online-clipboard/", code=302)
+
 
 '''Error Fallback page route'''
 @app.route('/<path:path>')
