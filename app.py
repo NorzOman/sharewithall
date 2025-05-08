@@ -354,6 +354,14 @@ def support():
 def privacy_policy():
     return redirect("https://online-clipboard.online/online-clipboard/", code=302)
 
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_file('static/sitemap.xml')
+
+@app.route('/robots.txt')
+def robots_txt():
+    return send_file('static/robots.txt')
+
 
 '''Error Fallback page route'''
 @app.route('/<path:path>')

@@ -1,0 +1,4 @@
+User-agent: *
+Disallow:
+
+Sitemap: https://sharewithall.vercel.app/sitemap.xml
