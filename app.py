@@ -210,95 +210,95 @@ def base():
     return render_template('hack.html')
     #return render_template('base.html')
 
-@app.route('/share-file', methods=['GET','POST'])
-def share_file_route():
-    if request.method == "POST":
-        if "file" not in request.files:
-            return jsonify({"error": "No file part in the request"}), 400
+# @app.route('/share-file', methods=['GET','POST'])
+# def share_file_route():
+#     if request.method == "POST":
+#         if "file" not in request.files:
+#             return jsonify({"error": "No file part in the request"}), 400
 
-        file = request.files["file"]
-        if not file or file.filename == "":
-            return jsonify({"error": "No selected file or filename is empty"}), 400
+#         file = request.files["file"]
+#         if not file or file.filename == "":
+#             return jsonify({"error": "No selected file or filename is empty"}), 400
 
-        file.seek(0, os.SEEK_END)
-        file_length = file.tell()
-        file.seek(0)
+#         file.seek(0, os.SEEK_END)
+#         file_length = file.tell()
+#         file.seek(0)
 
-        MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024 
-        if file_length == 0:
-            return jsonify({"error": "Uploaded file is empty."}), 400
-        if file_length > MAX_FILE_SIZE_BYTES:
-            return jsonify({"error": f"File size ({file_length / (1024*1024):.2f}MB) exceeds {MAX_FILE_SIZE_BYTES // (1024*1024)}MB limit"}), 413
+#         MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024 
+#         if file_length == 0:
+#             return jsonify({"error": "Uploaded file is empty."}), 400
+#         if file_length > MAX_FILE_SIZE_BYTES:
+#             return jsonify({"error": f"File size ({file_length / (1024*1024):.2f}MB) exceeds {MAX_FILE_SIZE_BYTES // (1024*1024)}MB limit"}), 413
 
-        result = upload_files(file)
-        if "error" in result:
-            print(f"[SERVER_ERROR] /share-file: {result['error']}")
-            return jsonify({"error": result["error"]}), 500 
+#         result = upload_files(file)
+#         if "error" in result:
+#             print(f"[SERVER_ERROR] /share-file: {result['error']}")
+#             return jsonify({"error": result["error"]}), 500 
 
-        return jsonify({
-            "success": True,
-            "message": "File uploaded successfully!",
-            "FileCode": result["code"]
-        })
-    return render_template('share-file.html')
+#         return jsonify({
+#             "success": True,
+#             "message": "File uploaded successfully!",
+#             "FileCode": result["code"]
+#         })
+#     return render_template('share-file.html')
 
-@app.route('/receive-file', methods=['POST'])
-def receive_file_route():
-    try:
-        if not request.is_json:
-            return jsonify({"error": "Request must be JSON"}), 415
+# @app.route('/receive-file', methods=['POST'])
+# def receive_file_route():
+#     try:
+#         if not request.is_json:
+#             return jsonify({"error": "Request must be JSON"}), 415
 
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "No JSON data provided"}), 400
+#         data = request.get_json()
+#         if not data:
+#             return jsonify({"error": "No JSON data provided"}), 400
 
-        access_code = data.get("code")
-        if access_code is None:
-            return jsonify({"error": "No access code provided in JSON payload (key 'code' missing)"}), 400
+#         access_code = data.get("code")
+#         if access_code is None:
+#             return jsonify({"error": "No access code provided in JSON payload (key 'code' missing)"}), 400
 
-        access_code_str = str(access_code).strip()
-        if not (len(access_code_str) == 4 and access_code_str.isdigit()):
-            return jsonify({"error": "Invalid access code format. Must be 4 digits."}), 400
+#         access_code_str = str(access_code).strip()
+#         if not (len(access_code_str) == 4 and access_code_str.isdigit()):
+#             return jsonify({"error": "Invalid access code format. Must be 4 digits."}), 400
 
-        direct_url, original_filename = get_url_and_filename_from_supabase(access_code_str)
+#         direct_url, original_filename = get_url_and_filename_from_supabase(access_code_str)
 
-        if original_filename is None and "Error" in direct_url:
-            status_code = 404 if "not found" in direct_url.lower() else 500
-            return jsonify({"error": direct_url}), status_code
-        elif not direct_url or not original_filename :
-             return jsonify({"error": "Failed to retrieve file details."}), 500
+#         if original_filename is None and "Error" in direct_url:
+#             status_code = 404 if "not found" in direct_url.lower() else 500
+#             return jsonify({"error": direct_url}), status_code
+#         elif not direct_url or not original_filename :
+#              return jsonify({"error": "Failed to retrieve file details."}), 500
 
-        print(f"[INFO] File URL retrieved for code {access_code_str}: {original_filename}")
-        return jsonify({
-            "success": True,
-            "download_url": direct_url,
-            "filename": original_filename
-        })
-    except Exception as e:
-        print(f"[ERROR] Server error in /receive-file: {str(e)}")
-        return jsonify({"error": f"Server error processing request. (Code 108)"}), 500
+#         print(f"[INFO] File URL retrieved for code {access_code_str}: {original_filename}")
+#         return jsonify({
+#             "success": True,
+#             "download_url": direct_url,
+#             "filename": original_filename
+#         })
+#     except Exception as e:
+#         print(f"[ERROR] Server error in /receive-file: {str(e)}")
+#         return jsonify({"error": f"Server error processing request. (Code 108)"}), 500
 
-@app.route('/fixes') 
-def fixes_redirect():
-    return redirect("https://online-clipboard.online/online-clipboard/", code=302)
+# @app.route('/fixes') 
+# def fixes_redirect():
+#     return redirect("https://online-clipboard.online/online-clipboard/", code=302)
 
-@app.route('/sitemap.xml')
-def sitemap():
-    try:
-        return send_file('static/sitemap.xml', mimetype='application/xml')
-    except FileNotFoundError:
-        return "sitemap.xml not found", 404
+# @app.route('/sitemap.xml')
+# def sitemap():
+#     try:
+#         return send_file('static/sitemap.xml', mimetype='application/xml')
+#     except FileNotFoundError:
+#         return "sitemap.xml not found", 404
 
-@app.route('/robots.txt')
-def robots_txt():
-    try:
-        return send_file('static/robots.txt', mimetype='text/plain')
-    except FileNotFoundError:
-        return "robots.txt not found", 404
+# @app.route('/robots.txt')
+# def robots_txt():
+#     try:
+#         return send_file('static/robots.txt', mimetype='text/plain')
+#     except FileNotFoundError:
+#         return "robots.txt not found", 404
 
 @app.route('/<path:path>')
 def error_404(path):
-    return f"404 Not Found: The requested path '/{path}' was not found on this server.", 404
+    return redirect(url_for('base'))
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)
