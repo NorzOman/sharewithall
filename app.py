@@ -207,7 +207,8 @@ def upload_files(file_storage_object):
 
 @app.route('/')
 def base():
-    return render_template('base.html')
+    return render_template('hack.html')
+    #return render_template('base.html')
 
 @app.route('/share-file', methods=['GET','POST'])
 def share_file_route():
